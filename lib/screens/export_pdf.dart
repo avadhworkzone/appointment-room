@@ -57,8 +57,8 @@ Future<void> exportUsersAsPDF(List<UserModel> users) async {
             pw.Text("User Report", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
-              headers: ["ID", "Username", "Full Name"],
-              data: users.map((user) => [user.id, user.username, user.fullname]).toList(),
+              headers: ["ID", "Mobile NUmber", "Full Name"],
+              data: users.map((user) => [user.id, user.mobileNumber, user.fullname]).toList(),
               border: pw.TableBorder.all(),
               cellAlignment: pw.Alignment.centerLeft,
             ),

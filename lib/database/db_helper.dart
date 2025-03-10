@@ -25,6 +25,15 @@ class DBHelper {
     await db.execute('''
       CREATE TABLE Users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fullname TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        mobileNumber TEXT NOT NULL
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE LoginUsers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         password TEXT NOT NULL,
         fullname TEXT NOT NULL
@@ -65,16 +74,15 @@ class DBHelper {
     ''');
   }
 
-  // CRUD Operations for Users
-  static Future<int> insertUser(Map<String, dynamic> user) async {
+
+  static Future<List<Map<String, dynamic>>> getLoginUsers() async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.insert('Users', user);
-    });
+    return await db.query('LoginUsers');
   }
 
   static Future<List<Map<String, dynamic>>> getUsers() async {
     final db = await database;
+    print('db---->${db.query('Users')}');
     return await db.query('Users');
   }
 

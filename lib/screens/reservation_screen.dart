@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
+import '../controller/user_controller.dart';
 import '../model/reservation_model.dart';
 
 class ReservationScreen extends StatelessWidget {
   final ReservationController reservationController = Get.find<ReservationController>();
+  final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
 
   final _formKey = GlobalKey<FormState>();
 
@@ -181,7 +183,7 @@ class ReservationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Reservations")),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: userController.userList.isEmpty?SizedBox():FloatingActionButton(
         onPressed: () => showReservationDialog(),
         child: Icon(Icons.add),
       ),

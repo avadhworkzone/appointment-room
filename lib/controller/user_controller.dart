@@ -21,7 +21,7 @@ class UserController extends GetxController {
 
     final users = await DBHelper.getUsers();
     userList.assignAll(users.map((e) => UserModel.fromMap(e)).toList());
-
+print('userList---$userList');
     isProcessing.value = false;
   }
 
@@ -30,7 +30,7 @@ class UserController extends GetxController {
     if (isProcessing.value) return; // ✅ Prevents multiple fetches at once
     isProcessing.value = true;
 
-    final users = await DBHelper.getUsers();
+    final users = await DBHelper.getLoginUsers();
     loginUserList.assignAll(users.map((e) => LoginUserModel.fromMap(e)).toList());
 
     isProcessing.value = false;
@@ -47,7 +47,7 @@ class UserController extends GetxController {
       });
     });
 
-    await fetchUsers(); // ✅ Refresh list after adding a user
+    await loginFetchUsers(); // ✅ Refresh list after adding a user
     isProcessing.value = false;
   }
   ///users
@@ -57,7 +57,7 @@ class UserController extends GetxController {
 
     await DBHelper.database.then((db) async {
       await db.transaction((txn) async {
-        await txn.insert('LoginUsers', user.toMap());
+        await txn.insert('Users', user.toMap());
       });
     });
 

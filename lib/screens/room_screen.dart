@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/room_controller.dart';
+import '../controller/user_controller.dart';
 import '../model/room_model.dart';
 import 'export_pdf.dart';
 
 class RoomScreen extends StatelessWidget {
   final RoomController roomController = Get.find<RoomController>(); // ✅ Use Get.find() to avoid multiple instances
+  final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
 
   final TextEditingController roomNameController = TextEditingController();
   final TextEditingController roomDescController = TextEditingController();
@@ -102,7 +104,7 @@ class RoomScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Rooms")),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:userController.userList.isEmpty?SizedBox(): FloatingActionButton(
         onPressed: () => showRoomDialog(),
         child: Icon(Icons.add),
       ),

@@ -71,7 +71,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: true,
                     validator: (value) => value!.length < 6 ? "Password must be 6+ chars" : null,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
 
                   TextFormField(
                     controller: fullnameController,

@@ -1,11 +1,12 @@
 class UserModel {
   int? id;
-  String username;
+  String? userId;
+  String mobileNumber;
   String fullname;
 
   UserModel({
-    this.id,
-    required this.username,
+    this.id,this.userId,
+    required this.mobileNumber,
     required this.fullname,
   });
 
@@ -13,7 +14,8 @@ class UserModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'username': username,
+      'mobileNumber': mobileNumber,
+      'userId':userId,
       'fullname': fullname,
     };
   }
@@ -22,7 +24,8 @@ class UserModel {
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       id: map['id'],
-      username: map['username'],
+      userId: map['userId'],
+      mobileNumber:map['mobileNumber'],
       fullname: map['fullname'],
     );
   }
