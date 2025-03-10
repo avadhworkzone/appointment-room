@@ -104,7 +104,7 @@ class RoomScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Rooms")),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showRoomDialog(),
-        child: Icon(Icons.add, color: Colors.red),
+        child: Icon(Icons.add),
       ),
       body: Obx(() => roomController.roomList.isEmpty
           ? Center(child: Text("No rooms found. Add a new room!"))
