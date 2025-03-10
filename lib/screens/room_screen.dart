@@ -5,13 +5,13 @@ import '../model/room_model.dart';
 import 'export_pdf.dart';
 
 class RoomScreen extends StatelessWidget {
-  final RoomController roomController = Get.put(RoomController());
+  final RoomController roomController = Get.find<RoomController>(); // ✅ Use Get.find() to avoid multiple instances
 
   final TextEditingController roomNameController = TextEditingController();
   final TextEditingController roomDescController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
 
-  var isProcessing = false.obs; // ✅ Prevents multiple clicks and database locks
+  var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
   void showRoomDialog({RoomModel? room}) {
     if (room != null) {
@@ -50,7 +50,7 @@ class RoomScreen extends StatelessWidget {
                 }
 
                 isProcessing.value = true; // ✅ Prevent multiple clicks
-                await Future.delayed(Duration(milliseconds: 500)); // ✅ Ensure previous writes finish
+                await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
 
                 if (room == null) {
                   await roomController.addRoom(RoomModel(
@@ -67,6 +67,7 @@ class RoomScreen extends StatelessWidget {
                   ));
                 }
 
+                await roomController.fetchRooms(); // ✅ Update list immediately
                 isProcessing.value = false;
                 Get.back();
               },
@@ -88,8 +89,9 @@ class RoomScreen extends StatelessWidget {
       confirmTextColor: Colors.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
-        await Future.delayed(Duration(milliseconds: 500)); // ✅ Delay execution
+        await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
         await roomController.deleteRoom(id);
+        await roomController.fetchRooms(); // ✅ Refresh list after delete
         isProcessing.value = false;
         Get.back();
       },
@@ -102,7 +104,7 @@ class RoomScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Rooms")),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showRoomDialog(),
-        child: Icon(Icons.add,color: Colors.red,),
+        child: Icon(Icons.add, color: Colors.red),
       ),
       body: Obx(() => roomController.roomList.isEmpty
           ? Center(child: Text("No rooms found. Add a new room!"))

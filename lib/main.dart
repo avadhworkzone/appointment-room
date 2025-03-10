@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       title: 'Reservation App',
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.blue,
+        colorSchemeSeed: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[100],
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.blue,
@@ -89,7 +89,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
+      extendBody: false, // Removes floating bottom bar
       appBar: AppBar(
         title: Text("Reservation App"),
         actions: [
@@ -102,48 +102,39 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       body: screens[currentIndex],
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.0),
-          child: Obx(() => BottomNavigationBar(
-            currentIndex: currentIndex,
-            onTap: (index) {
-              setState(() {
-                currentIndex = index;
-                clearBadge(index); // Clear badge on tap
-              });
-            },
-            selectedItemColor: Colors.blue,
-            unselectedItemColor: Colors.grey,
-            backgroundColor: Colors.white,
-            elevation: 10,
-            type: BottomNavigationBarType.fixed,
-            items: [
-              _buildNavItem(Icons.calendar_today, "Calendar", badgeController.calendarBadge.value),
-              _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
-              _buildNavItem(Icons.event, "Reservations", badgeController.reservationsBadge.value),
-              _buildNavItem(Icons.person, "Users", badgeController.usersBadge.value),
-              _buildNavItem(Icons.settings, "Settings", badgeController.settingsBadge.value),
-            ],
-          )),
-        ),
-      ),
+
+      bottomNavigationBar: Obx(() => NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+            clearBadge(index); // Clear badge on tap
+          });
+        },
+        destinations: [
+          _buildNavItem(Icons.calendar_today, "Calendar", badgeController.calendarBadge.value),
+          _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
+          _buildNavItem(Icons.event, "Reservations", badgeController.reservationsBadge.value),
+          _buildNavItem(Icons.person, "Users", badgeController.usersBadge.value),
+          _buildNavItem(Icons.settings, "Settings", badgeController.settingsBadge.value),
+        ],
+      )),
     );
   }
 
-  /// Helper function to build Bottom Navigation items with notification badges
-  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int badgeCount) {
-    return BottomNavigationBarItem(
+  /// 🔹 Modern **Navigation Bar Item with Notification Badges**
+  NavigationDestination _buildNavItem(IconData icon, String label, int badgeCount) {
+    return NavigationDestination(
       icon: Stack(
+        clipBehavior: Clip.none,
         children: [
           Icon(icon, size: 28),
-          if (badgeCount > 0) // Show badge only if there's a notification
+          if (badgeCount > 0)
             Positioned(
-              right: 0,
-              top: 0,
+              right: -2,
+              top: -2,
               child: Container(
-                padding: EdgeInsets.all(5),
+                padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
                 constraints: BoxConstraints(minWidth: 18, minHeight: 18),
                 child: Text(

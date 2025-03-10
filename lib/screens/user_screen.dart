@@ -5,13 +5,13 @@ import '../model/user_model.dart';
 import 'export_pdf.dart';
 
 class UserScreen extends StatelessWidget {
-  final UserController userController = Get.put(UserController());
+  final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
 
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullnameController = TextEditingController();
 
-  var isProcessing = false.obs; // ✅ Prevents multiple clicks and database locks
+  var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
   void showUserDialog({UserModel? user}) {
     if (user != null) {
@@ -50,7 +50,7 @@ class UserScreen extends StatelessWidget {
                 }
 
                 isProcessing.value = true; // ✅ Prevent multiple clicks
-                await Future.delayed(Duration(milliseconds: 500)); // ✅ Ensure previous writes finish
+                await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
 
                 if (user == null) {
                   await userController.addUser(UserModel(
@@ -67,6 +67,7 @@ class UserScreen extends StatelessWidget {
                   ));
                 }
 
+                await userController.fetchUsers(); // ✅ Update list immediately
                 isProcessing.value = false;
                 Get.back();
               },
@@ -88,8 +89,9 @@ class UserScreen extends StatelessWidget {
       confirmTextColor: Colors.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
-        await Future.delayed(Duration(milliseconds: 500)); // ✅ Delay execution
+        await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
         await userController.deleteUser(id);
+        await userController.fetchUsers(); // ✅ Refresh user list after delete
         isProcessing.value = false;
         Get.back();
       },

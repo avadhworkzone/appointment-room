@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart'; // For Date Formatting
+import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
 import '../model/reservation_model.dart';
 import 'export_pdf.dart';
 
 class ReservationScreen extends StatelessWidget {
-  final ReservationController reservationController = Get.put(ReservationController());
+  final ReservationController reservationController = Get.find<ReservationController>();
 
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController checkinController = TextEditingController();
@@ -56,32 +56,16 @@ class ReservationScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(reservation == null ? "Add Reservation" : "Edit Reservation",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            TextField(
-              controller: userIdController,
-              decoration: InputDecoration(labelText: "User ID"),
-              keyboardType: TextInputType.number,
+            Text(
+              reservation == null ? "Add Reservation" : "Edit Reservation",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            TextField(
-              controller: fullnameController,
-              decoration: InputDecoration(labelText: "Full Name"),
-            ),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: "Phone"),
-              keyboardType: TextInputType.phone,
-            ),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: rateController,
-              decoration: InputDecoration(labelText: "Rate Per Night"),
-              keyboardType: TextInputType.number,
-            ),
+            SizedBox(height: 10),
+            TextField(controller: userIdController, decoration: InputDecoration(labelText: "User ID"), keyboardType: TextInputType.number),
+            TextField(controller: fullnameController, decoration: InputDecoration(labelText: "Full Name")),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: "Phone"), keyboardType: TextInputType.phone),
+            TextField(controller: emailController, decoration: InputDecoration(labelText: "Email"), keyboardType: TextInputType.emailAddress),
+            TextField(controller: rateController, decoration: InputDecoration(labelText: "Rate Per Night"), keyboardType: TextInputType.number),
             Row(
               children: [
                 Expanded(
@@ -127,23 +111,23 @@ class ReservationScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text("Adults"),
-                DropdownButton<int>(
+                Obx(() => DropdownButton<int>(
                   value: adultCount.value,
                   items: List.generate(5, (index) => DropdownMenuItem(value: index + 1, child: Text("${index + 1}"))),
                   onChanged: (value) => adultCount.value = value!,
-                ),
+                )),
                 Text("Children"),
-                DropdownButton<int>(
+                Obx(() => DropdownButton<int>(
                   value: childCount.value,
                   items: List.generate(5, (index) => DropdownMenuItem(value: index, child: Text("$index"))),
                   onChanged: (value) => childCount.value = value!,
-                ),
+                )),
                 Text("Pets"),
-                DropdownButton<int>(
+                Obx(() => DropdownButton<int>(
                   value: petCount.value,
                   items: List.generate(3, (index) => DropdownMenuItem(value: index, child: Text("$index"))),
                   onChanged: (value) => petCount.value = value!,
-                ),
+                )),
               ],
             ),
             SizedBox(height: 10),
@@ -157,7 +141,7 @@ class ReservationScreen extends StatelessWidget {
                 }
 
                 isProcessing.value = true; // ✅ Prevent multiple clicks
-                await Future.delayed(Duration(milliseconds: 500)); // ✅ Ensure previous writes finish
+                await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
 
                 double rate = double.tryParse(rateController.text) ?? 100.0;
                 double subtotal = rate * (1 + childCount.value * 0.5);
@@ -205,6 +189,7 @@ class ReservationScreen extends StatelessWidget {
                   ));
                 }
 
+                await reservationController.fetchReservations(); // ✅ Refresh list
                 isProcessing.value = false;
                 Get.back();
               },

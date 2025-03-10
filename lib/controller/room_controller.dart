@@ -4,7 +4,7 @@ import '../model/room_model.dart';
 
 class RoomController extends GetxController {
   var roomList = <RoomModel>[].obs;
-  var isProcessing = false.obs; // ✅ Prevents multiple simultaneous operations
+  var isProcessing = false.obs; // ✅ Prevent multiple operations at once
 
   @override
   void onInit() {
@@ -12,9 +12,9 @@ class RoomController extends GetxController {
     fetchRooms(); // ✅ Load rooms when the controller is initialized
   }
 
-  /// ✅ **Optimized Fetch Method**
-  fetchRooms() async {
-    if (isProcessing.value) return; // ✅ Prevents multiple fetches at once
+  /// ✅ **Fetch Rooms with Safe Database Handling**
+  Future<void> fetchRooms() async {
+    if (isProcessing.value) return; // ✅ Prevent multiple fetches at once
     isProcessing.value = true;
 
     final rooms = await DBHelper.getRooms();
@@ -23,10 +23,22 @@ class RoomController extends GetxController {
     isProcessing.value = false;
   }
 
-  /// ✅ **Transaction-Based Insert**
+  /// ✅ **Check if User Exists Before Creating Room**
+  Future<bool> _doesUserExist(int userId) async {
+    final users = await DBHelper.getUsers();
+    return users.any((user) => user["id"] == userId);
+  }
+
+  /// ✅ **Add Room with Foreign Key Validation**
   Future<void> addRoom(RoomModel room) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
+
+    if (!(await _doesUserExist(room.userId))) {
+      Get.snackbar("Error", "User ID ${room.userId} does not exist.");
+      isProcessing.value = false;
+      return;
+    }
 
     await DBHelper.database.then((db) async {
       await db.transaction((txn) async {
@@ -38,10 +50,16 @@ class RoomController extends GetxController {
     isProcessing.value = false;
   }
 
-  /// ✅ **Transaction-Based Update**
+  /// ✅ **Update Room with Foreign Key Validation**
   Future<void> updateRoom(RoomModel room) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
+
+    if (!(await _doesUserExist(room.userId))) {
+      Get.snackbar("Error", "User ID ${room.userId} does not exist.");
+      isProcessing.value = false;
+      return;
+    }
 
     await DBHelper.database.then((db) async {
       await db.transaction((txn) async {
@@ -53,7 +71,7 @@ class RoomController extends GetxController {
     isProcessing.value = false;
   }
 
-  /// ✅ **Transaction-Based Delete**
+  /// ✅ **Delete Room Safely**
   Future<void> deleteRoom(int id) async {
     if (isProcessing.value) return;
     isProcessing.value = true;

@@ -4,7 +4,7 @@ import '../model/reservation_model.dart';
 
 class ReservationController extends GetxController {
   var reservationList = <ReservationModel>[].obs;
-  var isProcessing = false.obs; // ✅ Prevents multiple writes at once
+  var isProcessing = false.obs; // ✅ Prevents multiple simultaneous operations
 
   @override
   void onInit() {
@@ -12,59 +12,97 @@ class ReservationController extends GetxController {
     fetchReservations();
   }
 
-  /// ✅ **Optimized Fetch Method (No Excessive Reads)**
-  fetchReservations() async {
-    if (isProcessing.value) return; // ✅ Prevents multiple fetches at once
+  /// ✅ **Fetch Reservations (Optimized)**
+  Future<void> fetchReservations() async {
+    if (isProcessing.value) return; // ✅ Prevent multiple fetches at once
     isProcessing.value = true;
 
-    final reservations = await DBHelper.getReservations();
-    reservationList.assignAll(reservations.map((e) => ReservationModel.fromMap(e)).toList());
-
-    isProcessing.value = false;
+    try {
+      final reservations = await DBHelper.getReservations();
+      reservationList.assignAll(reservations.map((e) => ReservationModel.fromMap(e)).toList());
+    } catch (e) {
+      print("Error fetching reservations: $e");
+    } finally {
+      isProcessing.value = false;
+    }
   }
 
-  /// ✅ **Transaction-Based Insert**
+  /// ✅ **Check if User Exists Before Creating Reservation**
+  Future<bool> _doesUserExist(int userId) async {
+    final users = await DBHelper.getUsers();
+    return users.any((user) => user["id"] == userId);
+  }
+
+  /// ✅ **Add Reservation with Foreign Key Validation**
   Future<void> addReservation(ReservationModel reservation) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    await DBHelper.database.then((db) async {
-      await db.transaction((txn) async {
-        await txn.insert('Reservations', reservation.toMap());
-      });
-    });
+    if (!(await _doesUserExist(reservation.userId))) {
+      Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Please create the user first.");
+      isProcessing.value = false;
+      return;
+    }
 
-    await fetchReservations();
-    isProcessing.value = false;
+    try {
+      await DBHelper.database.then((db) async {
+        await db.transaction((txn) async {
+          await txn.insert('Reservations', reservation.toMap());
+        });
+      });
+      await fetchReservations(); // ✅ Refresh list after adding a reservation
+    } catch (e) {
+      print("Error adding reservation: $e");
+      Get.snackbar("Database Error", "Failed to add reservation.");
+    } finally {
+      isProcessing.value = false;
+    }
   }
 
-  /// ✅ **Transaction-Based Update**
+  /// ✅ **Update Reservation with Foreign Key Validation**
   Future<void> updateReservation(ReservationModel reservation) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    await DBHelper.database.then((db) async {
-      await db.transaction((txn) async {
-        await txn.update('Reservations', reservation.toMap(), where: 'id = ?', whereArgs: [reservation.id]);
-      });
-    });
+    if (!(await _doesUserExist(reservation.userId))) {
+      Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Update failed.");
+      isProcessing.value = false;
+      return;
+    }
 
-    await fetchReservations();
-    isProcessing.value = false;
+    try {
+      await DBHelper.database.then((db) async {
+        await db.transaction((txn) async {
+          await txn.update('Reservations', reservation.toMap(),
+              where: 'id = ?', whereArgs: [reservation.id]);
+        });
+      });
+      await fetchReservations(); // ✅ Refresh list after updating a reservation
+    } catch (e) {
+      print("Error updating reservation: $e");
+      Get.snackbar("Database Error", "Failed to update reservation.");
+    } finally {
+      isProcessing.value = false;
+    }
   }
 
-  /// ✅ **Transaction-Based Delete**
+  /// ✅ **Delete Reservation with Error Handling**
   Future<void> deleteReservation(int id) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    await DBHelper.database.then((db) async {
-      await db.transaction((txn) async {
-        await txn.delete('Reservations', where: 'id = ?', whereArgs: [id]);
+    try {
+      await DBHelper.database.then((db) async {
+        await db.transaction((txn) async {
+          await txn.delete('Reservations', where: 'id = ?', whereArgs: [id]);
+        });
       });
-    });
-
-    await fetchReservations();
-    isProcessing.value = false;
+      await fetchReservations(); // ✅ Refresh list after deleting a reservation
+    } catch (e) {
+      print("Error deleting reservation: $e");
+      Get.snackbar("Database Error", "Failed to delete reservation.");
+    } finally {
+      isProcessing.value = false;
+    }
   }
 }
