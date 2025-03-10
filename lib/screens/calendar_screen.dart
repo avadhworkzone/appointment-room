@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
+import '../model/reservation_model.dart';
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -10,9 +11,9 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final ReservationController reservationController = Get.put(ReservationController());
+  final ReservationController reservationController = Get.find();
   DateTime _selectedDay = DateTime.now();
-  List<dynamic> _events = [];
+  Map<DateTime, List<ReservationModel>> _eventsMap = {};
 
   @override
   void initState() {
@@ -20,32 +21,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadEvents();
   }
 
-  /// Function to ensure date is properly formatted before parsing
+  /// ✅ **Ensures correct date parsing**
   DateTime _parseDate(String dateString) {
     try {
-      // If already in YYYY-MM-DD format, return directly
       return DateTime.parse(dateString);
     } catch (e) {
-      // If format is incorrect, attempt conversion
       try {
-        DateFormat inputFormat = DateFormat("dd-MM-yyyy"); // Format of incoming date
-        DateTime parsedDate = inputFormat.parse(dateString); // Convert to DateTime
-        DateFormat outputFormat = DateFormat("yyyy-MM-dd"); // Convert to correct format
-        return DateTime.parse(outputFormat.format(parsedDate)); // Convert to DateTime
+        return DateFormat("dd-MM-yyyy").parse(dateString);
       } catch (e) {
-        print("Date parsing error: $e"); // Debugging
-        return DateTime.now(); // Default fallback
+        print("Date parsing error: $e");
+        return DateTime.now();
       }
     }
   }
 
+  /// ✅ **Optimized function to pre-load reservations into a Map**
   void _loadEvents() {
     setState(() {
-      _events = reservationController.reservationList
-          .where((res) => _parseDate(res.checkin).year == _selectedDay.year &&
-          _parseDate(res.checkin).month == _selectedDay.month &&
-          _parseDate(res.checkin).day == _selectedDay.day)
-          .toList();
+      _eventsMap.clear();
+      for (var res in reservationController.reservationList) {
+        DateTime parsedDate = _parseDate(res.checkin);
+        if (_eventsMap.containsKey(parsedDate)) {
+          _eventsMap[parsedDate]!.add(res);
+        } else {
+          _eventsMap[parsedDate] = [res];
+        }
+      }
     });
   }
 
@@ -63,16 +64,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
-                _loadEvents();
               });
             },
-            eventLoader: (day) {
-              return reservationController.reservationList
-                  .where((res) => _parseDate(res.checkin).year == day.year &&
-                  _parseDate(res.checkin).month == day.month &&
-                  _parseDate(res.checkin).day == day.day)
-                  .toList();
-            },
+            eventLoader: (day) => _eventsMap[day] ?? [],
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
               selectedDecoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
@@ -80,12 +74,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: _events.isEmpty
-                ? Center(child: Text("No reservations on this day."))
-                : ListView.builder(
-              itemCount: _events.length,
+            child: ListView.builder(
+              itemCount: _eventsMap[_selectedDay]?.length ?? 0,
               itemBuilder: (context, index) {
-                final reservation = _events[index];
+                final reservation = _eventsMap[_selectedDay]![index];
                 return Card(
                   elevation: 4,
                   margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),

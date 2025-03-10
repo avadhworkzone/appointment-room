@@ -8,7 +8,7 @@ import '../controller/badge_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   final isDarkMode = false.obs;
-  final isLoading = false.obs; // Track loading state
+  final isLoading = false.obs; // ✅ Prevents multiple database operations at once
 
   final UserController userController = Get.find();
   final RoomController roomController = Get.find();
@@ -17,40 +17,46 @@ class SettingsScreen extends StatelessWidget {
 
   /// Reset Specific Table or Entire Database
   void resetDatabase({String? table}) async {
+    if (isLoading.value) return; // ✅ Prevent multiple clicks
+    isLoading.value = true; // ✅ Start loading
+
     final db = await DBHelper.database;
-    final BadgeController badgeController = Get.find(); // ✅ Ensure it's available
-    isLoading.value = true; // Start loading
-
     await db.transaction((txn) async {
-      await txn.execute("PRAGMA foreign_keys = OFF;");
+      try {
+        await txn.execute("PRAGMA foreign_keys = OFF;");
 
-      if (table == "Users") {
-        await txn.execute("DELETE FROM Users;");
-        userController.fetchUsers();
-      } else if (table == "Rooms") {
-        await txn.execute("DELETE FROM Rooms;");
-        roomController.fetchRooms();
-      } else if (table == "Reservations") {
-        await txn.execute("DELETE FROM Reservations;");
-        reservationController.fetchReservations();
-      } else {
-        await txn.execute("DELETE FROM Reservations;");
-        await txn.execute("DELETE FROM Rooms;");
-        await txn.execute("DELETE FROM Users;");
-        userController.fetchUsers();
-        roomController.fetchRooms();
-        reservationController.fetchReservations();
+        if (table == "Users") {
+          await txn.execute("DELETE FROM Users;");
+          await userController.fetchUsers();
+        } else if (table == "Rooms") {
+          await txn.execute("DELETE FROM Rooms;");
+          await roomController.fetchRooms();
+        } else if (table == "Reservations") {
+          await txn.execute("DELETE FROM Reservations;");
+          await reservationController.fetchReservations();
+        } else {
+          await txn.execute("DELETE FROM Reservations;");
+          await txn.execute("DELETE FROM Rooms;");
+          await txn.execute("DELETE FROM Users;");
+          await userController.fetchUsers();
+          await roomController.fetchRooms();
+          await reservationController.fetchReservations();
+        }
+
+        await txn.execute("PRAGMA foreign_keys = ON;");
+      } catch (e) {
+        Get.snackbar("Error", "Database reset failed: ${e.toString()}");
       }
-
-      await txn.execute("PRAGMA foreign_keys = ON;");
     });
 
-    // Update badge counts
-    if (Get.isRegistered<BadgeController>()) {
-      badgeController.updateBadgeCounts();
-    }
+    // ✅ Update badge counts **AFTER** database operations are complete
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (Get.isRegistered<BadgeController>()) {
+        badgeController.updateBadgeCounts();
+      }
+    });
 
-    isLoading.value = false; // Stop loading
+    isLoading.value = false; // ✅ Stop loading
     Get.snackbar("Success", "${table ?? 'All Data'} reset successfully!");
   }
 
@@ -70,9 +76,7 @@ class SettingsScreen extends StatelessWidget {
           )),
           Obx(() {
             if (isLoading.value) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
+              return Center(child: CircularProgressIndicator()); // ✅ Show loading indicator
             }
             return Column(
               children: [
@@ -104,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// Show Confirmation Dialog Before Reset
+  /// ✅ Show Confirmation Dialog Before Reset
   void showResetOptions() {
     Get.defaultDialog(
       title: "Reset Database",

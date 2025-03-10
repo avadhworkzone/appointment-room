@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sqflite/sqflite.dart';
 import 'controller/badge_controller.dart';
 import 'screens/user_screen.dart';
 import 'screens/room_screen.dart';
@@ -9,12 +10,19 @@ import 'screens/settings_screen.dart';
 import 'controller/user_controller.dart';
 import 'controller/room_controller.dart';
 import 'controller/reservation_controller.dart';
+import 'database/db_helper.dart';
 
-void main() {
-  Get.lazyPut(() => UserController(), fenix: true);
-  Get.lazyPut(() => RoomController(), fenix: true);
-  Get.lazyPut(() => ReservationController(), fenix: true);
-  Get.lazyPut(() => BadgeController(), fenix: true); // ✅ Lazy load badge controller
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Initialize the database before controllers
+  Database db = await DBHelper.database;
+
+  // ✅ Use Get.putAsync() to ensure database is ready before controllers
+  await Get.putAsync(() async => UserController());
+  await Get.putAsync(() async => RoomController());
+  await Get.putAsync(() async => ReservationController());
+  await Get.putAsync(() async => BadgeController());
 
   runApp(MyApp());
 }
@@ -55,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
     SettingsScreen(),
   ];
 
-  final BadgeController badgeController = Get.find<BadgeController>(); // Get Badge Controller
+  final BadgeController badgeController = Get.find<BadgeController>();
 
   /// Clear badge count for the selected screen when tapped
   void clearBadge(int index) {

@@ -19,6 +19,7 @@ class ReservationScreen extends StatelessWidget {
   var adultCount = 1.obs;
   var childCount = 0.obs;
   var petCount = 0.obs;
+  var isProcessing = false.obs; // ✅ Prevents multiple simultaneous writes
 
   void showReservationDialog({ReservationModel? reservation}) {
     if (reservation != null) {
@@ -146,20 +147,25 @@ class ReservationScreen extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
+            Obx(() => ElevatedButton(
+              onPressed: isProcessing.value
+                  ? null
+                  : () async {
                 if (fullnameController.text.isEmpty || userIdController.text.isEmpty) {
                   Get.snackbar("Error", "User ID and Full Name are required");
                   return;
                 }
 
+                isProcessing.value = true; // ✅ Prevent multiple clicks
+                await Future.delayed(Duration(milliseconds: 500)); // ✅ Ensure previous writes finish
+
                 double rate = double.tryParse(rateController.text) ?? 100.0;
-                double subtotal = rate * (1 + childCount.value * 0.5); // Assume child pays half
+                double subtotal = rate * (1 + childCount.value * 0.5);
                 double tax = subtotal * 0.1;
                 double grandTotal = subtotal + tax;
 
                 if (reservation == null) {
-                  reservationController.addReservation(ReservationModel(
+                  await reservationController.addReservation(ReservationModel(
                     userId: int.parse(userIdController.text),
                     checkin: checkinController.text,
                     checkout: checkoutController.text,
@@ -178,7 +184,7 @@ class ReservationScreen extends StatelessWidget {
                     balance: grandTotal - 50.0,
                   ));
                 } else {
-                  reservationController.updateReservation(ReservationModel(
+                  await reservationController.updateReservation(ReservationModel(
                     id: reservation.id,
                     userId: int.parse(userIdController.text),
                     checkin: checkinController.text,
@@ -198,10 +204,12 @@ class ReservationScreen extends StatelessWidget {
                     balance: grandTotal - 50.0,
                   ));
                 }
+
+                isProcessing.value = false;
                 Get.back();
               },
               child: Text(reservation == null ? "Add Reservation" : "Update Reservation"),
-            ),
+            )),
           ],
         ),
       ),
@@ -217,35 +225,18 @@ class ReservationScreen extends StatelessWidget {
         onPressed: () => showReservationDialog(),
         child: Icon(Icons.add),
       ),
-      body: Obx(() {
-
-        return Column(
-          children: [
-            Expanded(
-              child:reservationController.reservationList.isEmpty?Center(child: Text("No reservations found. Add a new reservation!")): ListView.builder(
-                itemCount: reservationController.reservationList.length,
-                itemBuilder: (context, index) {
-                  final reservation = reservationController.reservationList[index];
-                  return ListTile(
-                    title: Text(reservation.fullname),
-                    subtitle: Text("Check-in: ${reservation.checkin}, Check-out: ${reservation.checkout}"),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                onPressed: () {
-                  exportReservationsAsPDF(reservationController.reservationList);
-                  Get.snackbar("Export Successful", "PDF saved in documents folder!");
-                },
-                child: Text("Export as PDF"),
-              ),
-            ),
-          ],
-        );
-      }),
+      body: Obx(() => reservationController.reservationList.isEmpty
+          ? Center(child: Text("No reservations found. Add a new reservation!"))
+          : ListView.builder(
+        itemCount: reservationController.reservationList.length,
+        itemBuilder: (context, index) {
+          final reservation = reservationController.reservationList[index];
+          return ListTile(
+            title: Text(reservation.fullname),
+            subtitle: Text("Check-in: ${reservation.checkin}, Check-out: ${reservation.checkout}"),
+          );
+        },
+      )),
     );
   }
 }

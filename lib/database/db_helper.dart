@@ -5,22 +5,29 @@ class DBHelper {
   static Database? _database;
   static const String dbName = "app_database.db";
 
+  /// ✅ **Ensure Singleton**
   static Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB();
+    if (_database == null) {
+      _database = await _initDB();
+    }
     return _database!;
   }
 
+  /// ✅ **Initialize Database with Foreign Keys**
   static Future<Database> _initDB() async {
     final path = join(await getDatabasesPath(), dbName);
     return await openDatabase(
       path,
       version: 1,
       onCreate: _createDB,
-      singleInstance: true, // ✅ Ensure only one instance of the DB is used
+      onOpen: (db) async {
+        await db.execute("PRAGMA foreign_keys = ON;"); // ✅ Ensure foreign keys work
+      },
+      singleInstance: true,
     );
   }
 
+  /// ✅ **Create Tables with Foreign Key Constraints**
   static Future<void> _createDB(Database db, int version) async {
     await db.execute('''
       CREATE TABLE Users (
@@ -37,7 +44,7 @@ class DBHelper {
         room_name TEXT NOT NULL,
         room_desc TEXT,
         user_id INTEGER NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES Users(id)
+        FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
       );
     ''');
 
@@ -60,17 +67,23 @@ class DBHelper {
         grandtotal REAL NOT NULL,
         prepayment REAL NOT NULL,
         balance REAL NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES Users(id)
+        FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
       );
     ''');
   }
 
-  // CRUD Operations for Users
+  /// ✅ **Ensure database is properly closed when the app exits**
+  static Future<void> closeDatabase() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+  }
+
+  // ========== CRUD Operations for Users ==========
   static Future<int> insertUser(Map<String, dynamic> user) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.insert('Users', user);
-    });
+    return await db.transaction((txn) async => await txn.insert('Users', user));
   }
 
   static Future<List<Map<String, dynamic>>> getUsers() async {
@@ -80,24 +93,20 @@ class DBHelper {
 
   static Future<int> updateUser(Map<String, dynamic> user, int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.update('Users', user, where: 'id = ?', whereArgs: [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.update('Users', user, where: 'id = ?', whereArgs: [id]));
   }
 
   static Future<int> deleteUser(int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.rawDelete("DELETE FROM Users WHERE id = ?", [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.rawDelete("DELETE FROM Users WHERE id = ?", [id]));
   }
 
-  // CRUD Operations for Rooms
+  // ========== CRUD Operations for Rooms ==========
   static Future<int> insertRoom(Map<String, dynamic> room) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.insert('Rooms', room);
-    });
+    return await db.transaction((txn) async => await txn.insert('Rooms', room));
   }
 
   static Future<List<Map<String, dynamic>>> getRooms() async {
@@ -107,24 +116,21 @@ class DBHelper {
 
   static Future<int> updateRoom(Map<String, dynamic> room, int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.update('Rooms', room, where: 'id = ?', whereArgs: [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.update('Rooms', room, where: 'id = ?', whereArgs: [id]));
   }
 
   static Future<int> deleteRoom(int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.rawDelete("DELETE FROM Rooms WHERE id = ?", [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.rawDelete("DELETE FROM Rooms WHERE id = ?", [id]));
   }
 
-  // CRUD Operations for Reservations
+  // ========== CRUD Operations for Reservations ==========
   static Future<int> insertReservation(Map<String, dynamic> reservation) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.insert('Reservations', reservation);
-    });
+    return await db.transaction((txn) async =>
+    await txn.insert('Reservations', reservation));
   }
 
   static Future<List<Map<String, dynamic>>> getReservations() async {
@@ -134,15 +140,33 @@ class DBHelper {
 
   static Future<int> updateReservation(Map<String, dynamic> reservation, int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.update('Reservations', reservation, where: 'id = ?', whereArgs: [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.update('Reservations', reservation, where: 'id = ?', whereArgs: [id]));
   }
 
   static Future<int> deleteReservation(int id) async {
     final db = await database;
-    return await db.transaction((txn) async {
-      return await txn.rawDelete("DELETE FROM Reservations WHERE id = ?", [id]);
-    });
+    return await db.transaction((txn) async =>
+    await txn.rawDelete("DELETE FROM Reservations WHERE id = ?", [id]));
+  }
+
+  /// ✅ **Reset Database with Timeout to Prevent Infinite Locks**
+  static Future<void> resetDatabase() async {
+    final db = await database;
+    try {
+      await db.transaction((txn) async {
+        await txn.execute("PRAGMA foreign_keys = OFF;");
+
+        await txn.rawDelete("DELETE FROM Reservations;");
+        await txn.rawDelete("DELETE FROM Rooms;");
+        await txn.rawDelete("DELETE FROM Users;");
+
+        await txn.execute("PRAGMA foreign_keys = ON;");
+      }).timeout(Duration(seconds: 5), onTimeout: () {
+        throw Exception("Database reset operation took too long.");
+      });
+    } catch (e) {
+      print("Database Reset Error: $e");
+    }
   }
 }

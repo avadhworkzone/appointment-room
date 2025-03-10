@@ -11,6 +11,8 @@ class UserScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullnameController = TextEditingController();
 
+  var isProcessing = false.obs; // ✅ Prevents multiple clicks and database locks
+
   void showUserDialog({UserModel? user}) {
     if (user != null) {
       usernameController.text = user.username;
@@ -22,37 +24,73 @@ class UserScreen extends StatelessWidget {
       fullnameController.clear();
     }
 
-    Get.defaultDialog(
-      title: user == null ? "Add User" : "Edit User",
-      content: Column(
-        children: [
-          TextField(controller: usernameController, decoration: InputDecoration(labelText: "Username")),
-          TextField(controller: passwordController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
-          TextField(controller: fullnameController, decoration: InputDecoration(labelText: "Full Name")),
-        ],
-      ),
-      textConfirm: user == null ? "Add" : "Update",
-      textCancel: "Cancel",
-      onConfirm: () {
-        if (usernameController.text.isEmpty || fullnameController.text.isEmpty) {
-          Get.snackbar("Error", "Username and Full Name are required");
-          return;
-        }
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(user == null ? "Add User" : "Edit User",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            TextField(controller: usernameController, decoration: InputDecoration(labelText: "Username")),
+            TextField(controller: passwordController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
+            TextField(controller: fullnameController, decoration: InputDecoration(labelText: "Full Name")),
+            SizedBox(height: 10),
+            Obx(() => ElevatedButton(
+              onPressed: isProcessing.value
+                  ? null
+                  : () async {
+                if (usernameController.text.isEmpty || fullnameController.text.isEmpty) {
+                  Get.snackbar("Error", "Username and Full Name are required");
+                  return;
+                }
 
-        if (user == null) {
-          userController.addUser(UserModel(
-            username: usernameController.text,
-            password: passwordController.text,
-            fullname: fullnameController.text,
-          ));
-        } else {
-          userController.updateUser(UserModel(
-            id: user.id,
-            username: usernameController.text,
-            password: passwordController.text,
-            fullname: fullnameController.text,
-          ));
-        }
+                isProcessing.value = true; // ✅ Prevent multiple clicks
+                await Future.delayed(Duration(milliseconds: 500)); // ✅ Ensure previous writes finish
+
+                if (user == null) {
+                  await userController.addUser(UserModel(
+                    username: usernameController.text,
+                    password: passwordController.text,
+                    fullname: fullnameController.text,
+                  ));
+                } else {
+                  await userController.updateUser(UserModel(
+                    id: user.id,
+                    username: usernameController.text,
+                    password: passwordController.text,
+                    fullname: fullnameController.text,
+                  ));
+                }
+
+                isProcessing.value = false;
+                Get.back();
+              },
+              child: Text(user == null ? "Add User" : "Update User"),
+            )),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void confirmDelete(int id) {
+    Get.defaultDialog(
+      title: "Delete User",
+      middleText: "Are you sure you want to delete this user?",
+      textConfirm: "Delete",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        isProcessing.value = true; // ✅ Prevent multiple clicks
+        await Future.delayed(Duration(milliseconds: 500)); // ✅ Delay execution
+        await userController.deleteUser(id);
+        isProcessing.value = false;
         Get.back();
       },
     );
@@ -62,35 +100,49 @@ class UserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Users")),
-      body: Obx(() {
-        return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: userController.userList.length,
-                itemBuilder: (context, index) {
-                  final user = userController.userList[index];
-                  return ListTile(
-                    title: Text(user.fullname),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => showUserDialog(),
+        child: Icon(Icons.add),
+      ),
+      body: Obx(() => userController.userList.isEmpty
+          ? Center(child: Text("No users found. Add a new user!"))
+          : Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: userController.userList.length,
+              itemBuilder: (context, index) {
+                final user = userController.userList[index];
+                return Card(
+                  elevation: 4,
+                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                  child: ListTile(
+                    title: Text(user.fullname, style: TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text("Username: ${user.username}"),
-                  );
-                },
-              ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => showUserDialog(user: user)),
+                        IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => confirmDelete(user.id!)),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                onPressed: () {
-                  exportUsersAsPDF(userController.userList);
-                  Get.snackbar("Export Successful", "PDF saved in documents folder!");
-                },
-                child: Text("Export Users as PDF"),
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: ElevatedButton(
+              onPressed: () {
+                exportUsersAsPDF(userController.userList);
+                Get.snackbar("Export Successful", "PDF saved in documents folder!");
+              },
+              child: Text("Export Users as PDF"),
             ),
-          ],
-        );
-      }),
+          ),
+        ],
+      )),
     );
   }
 }

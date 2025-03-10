@@ -17,27 +17,23 @@ class BadgeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    updateBadgeCounts();
+    updateBadgeCounts(); // ✅ Initial update
 
-    // Automatically update badges whenever the lists change
+    // ✅ Update badge counts when list updates (without triggering unnecessary fetches)
     ever(reservationController.reservationList, (_) => updateBadgeCounts());
     ever(userController.userList, (_) => updateBadgeCounts());
     ever(roomController.roomList, (_) => updateBadgeCounts());
   }
 
+  /// ✅ **Optimized Badge Count Update**
   void updateBadgeCounts() {
-    reservationController.fetchReservations();
-    userController.fetchUsers();
-    roomController.fetchRooms();
-
-    Future.delayed(Duration(milliseconds: 500), () {
-      calendarBadge.value = reservationController.reservationList.length;
-      roomsBadge.value = roomController.roomList.length;
-      reservationsBadge.value = reservationController.reservationList
-          .where((res) => res.checkin == DateTime.now().toString())
-          .length;
-      usersBadge.value = userController.userList.length;
-      settingsBadge.value = 0; // Reserved for future updates
-    });
+    // 🔥 Do NOT call `fetchReservations()` inside this function, just use cached values
+    calendarBadge.value = reservationController.reservationList.length;
+    roomsBadge.value = roomController.roomList.length;
+    reservationsBadge.value = reservationController.reservationList
+        .where((res) => DateTime.tryParse(res.checkin)?.isAtSameMomentAs(DateTime.now()) ?? false)
+        .length;
+    usersBadge.value = userController.userList.length;
+    settingsBadge.value = 0; // Reserved for future updates
   }
 }
