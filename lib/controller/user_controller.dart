@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import '../database/db_helper.dart';
+import '../model/login_user_model.dart';
 import '../model/user_model.dart';
 
 class UserController extends GetxController {
+  var loginUserList = <LoginUserModel>[].obs;
   var userList = <UserModel>[].obs;
   var isProcessing = false.obs; // ✅ Prevents multiple simultaneous operations
 
@@ -23,14 +25,39 @@ class UserController extends GetxController {
     isProcessing.value = false;
   }
 
-  /// ✅ **Transaction-Based Insert**
+  ///login data fatch
+  loginFetchUsers() async {
+    if (isProcessing.value) return; // ✅ Prevents multiple fetches at once
+    isProcessing.value = true;
+
+    final users = await DBHelper.getUsers();
+    loginUserList.assignAll(users.map((e) => LoginUserModel.fromMap(e)).toList());
+
+    isProcessing.value = false;
+  }
+
+  /// ✅ login
+  Future<void> addLoginUser(LoginUserModel user) async {
+    if (isProcessing.value) return;
+    isProcessing.value = true;
+
+    await DBHelper.database.then((db) async {
+      await db.transaction((txn) async {
+        await txn.insert('LoginUsers', user.toMap());
+      });
+    });
+
+    await fetchUsers(); // ✅ Refresh list after adding a user
+    isProcessing.value = false;
+  }
+  ///users
   Future<void> addUser(UserModel user) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
     await DBHelper.database.then((db) async {
       await db.transaction((txn) async {
-        await txn.insert('Users', user.toMap());
+        await txn.insert('LoginUsers', user.toMap());
       });
     });
 

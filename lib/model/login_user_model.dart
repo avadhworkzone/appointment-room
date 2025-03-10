@@ -1,11 +1,13 @@
-class UserModel {
+class LoginUserModel {
   int? id;
   String username;
+  String password;
   String fullname;
 
-  UserModel({
+  LoginUserModel({
     this.id,
     required this.username,
+    required this.password,
     required this.fullname,
   });
 
@@ -14,15 +16,17 @@ class UserModel {
     return {
       'id': id,
       'username': username,
+      'password': password,
       'fullname': fullname,
     };
   }
 
   // Convert a Map to a UserModel
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
+  factory LoginUserModel.fromMap(Map<String, dynamic> map) {
+    return LoginUserModel(
       id: map['id'],
       username: map['username'],
+      password: map['password'],
       fullname: map['fullname'],
     );
   }

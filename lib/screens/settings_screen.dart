@@ -5,7 +5,10 @@ import '../controller/room_controller.dart';
 import '../controller/reservation_controller.dart';
 import '../database/db_helper.dart';
 import '../controller/badge_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
 
+import 'login_screen.dart';
 class SettingsScreen extends StatelessWidget {
   final isDarkMode = false.obs;
   final isLoading = false.obs; // ✅ Prevents multiple database operations at once
@@ -99,6 +102,16 @@ class SettingsScreen extends StatelessWidget {
                   leading: Icon(Icons.event, color: Colors.purple),
                   title: Text("Reset Reservations"),
                   onTap: () => resetDatabase(table: "Reservations"),
+                ),
+                ListTile(
+                  leading: Icon(Icons.logout, color: Colors.red),
+                  title: Text("Logout"),
+                  onTap: () async{
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.clear(); // ✅ Remove login session
+
+                    Get.off(() => LoginScreen()); // ✅ Navigate back to login
+                  },
                 ),
               ],
             );

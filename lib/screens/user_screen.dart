@@ -8,7 +8,6 @@ class UserScreen extends StatelessWidget {
   final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
 
   final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullnameController = TextEditingController();
 
   var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
@@ -16,11 +15,9 @@ class UserScreen extends StatelessWidget {
   void showUserDialog({UserModel? user}) {
     if (user != null) {
       usernameController.text = user.username;
-      passwordController.text = user.password;
       fullnameController.text = user.fullname;
     } else {
       usernameController.clear();
-      passwordController.clear();
       fullnameController.clear();
     }
 
@@ -37,7 +34,6 @@ class UserScreen extends StatelessWidget {
             Text(user == null ? "Add User" : "Edit User",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextField(controller: usernameController, decoration: InputDecoration(labelText: "Username")),
-            TextField(controller: passwordController, decoration: InputDecoration(labelText: "Password"), obscureText: true),
             TextField(controller: fullnameController, decoration: InputDecoration(labelText: "Full Name")),
             SizedBox(height: 10),
             Obx(() => ElevatedButton(
@@ -55,14 +51,12 @@ class UserScreen extends StatelessWidget {
                 if (user == null) {
                   await userController.addUser(UserModel(
                     username: usernameController.text,
-                    password: passwordController.text,
                     fullname: fullnameController.text,
                   ));
                 } else {
                   await userController.updateUser(UserModel(
                     id: user.id,
                     username: usernameController.text,
-                    password: passwordController.text,
                     fullname: fullnameController.text,
                   ));
                 }
