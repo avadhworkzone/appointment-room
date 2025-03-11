@@ -13,14 +13,18 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   final ReservationController reservationController = Get.find();
   DateTime _selectedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  DateTime _focusedDay = DateTime.now();
   Map<DateTime, List<ReservationModel>> _eventsMap = {};
 
   @override
   void initState() {
     super.initState();
     _loadEvents();
-    ever(reservationController.reservationList, (_) => _loadEvents());
+
+    // Listen for reservation list changes
+    ever(reservationController.reservationList, (_) {
+      _loadEvents();
+    });
   }
 
   DateTime _parseDate(String dateString) {
@@ -43,7 +47,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       _eventsMap.clear();
       for (var res in reservationController.reservationList) {
         DateTime parsedDate = _parseDate(res.checkin);
-        _eventsMap.putIfAbsent(parsedDate, () => []).add(res);
+        if (_eventsMap.containsKey(parsedDate)) {
+          _eventsMap[parsedDate]!.add(res);
+        } else {
+          _eventsMap[parsedDate] = [res];
+        }
       }
     });
   }
@@ -57,25 +65,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
           TableCalendar(
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _selectedDay,
-            calendarFormat: _calendarFormat,
-            availableCalendarFormats: {
-              CalendarFormat.month: 'Month',
-              CalendarFormat.twoWeeks: '2 Weeks',
-              CalendarFormat.week: 'Week',
-            },
+            focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
               });
             },
-            onFormatChanged: (format) {
-              setState(() {
-                _calendarFormat = format;
-              });
+            availableGestures: AvailableGestures.horizontalSwipe,
+            headerVisible: false,
+            calendarFormat: CalendarFormat.week,
+            eventLoader: (day) {
+              DateTime normalizedDay = DateTime(day.year, day.month, day.day);
+              return _eventsMap[normalizedDay] ?? [];
             },
-            eventLoader: (day) => _eventsMap[DateTime(day.year, day.month, day.day)] ?? [],
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
               selectedDecoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
@@ -109,7 +113,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(reservation.fullname, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  reservation.fullname,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
             SizedBox(height: 8),
@@ -161,7 +168,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
-          Text("\$${amount.toStringAsFixed(2)}", style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color)),
+          Text("\$${amount.toStringAsFixed(2)}",
+              style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color)),
         ],
       ),
     );
