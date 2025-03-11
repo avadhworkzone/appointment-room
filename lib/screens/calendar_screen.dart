@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
 import '../model/reservation_model.dart';
+import 'reservation_detail_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -101,41 +102,49 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildReservationCard(ReservationModel reservation) {
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  reservation.fullname,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            _buildInfoRow(Icons.phone, "Phone: ${reservation.phone}"),
-            _buildInfoRow(Icons.email, "Email: ${reservation.email}"),
-            SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildGuestCount(Icons.person, "Adults", reservation.adult),
-                _buildGuestCount(Icons.child_care, "Children", reservation.child),
-                _buildGuestCount(Icons.pets, "Pets", reservation.pet),
-              ],
-            ),
-            Divider(thickness: 1, height: 16),
-            _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
-            _buildPriceRow("Prepayment", reservation.prepayment),
-            _buildPriceRow("Balance", reservation.balance, isBold: true, color: Colors.red),
-          ],
+    return InkWell(
+      onTap: () {
+        Get.to(()=>
+        ReservationDetailScreen(reservation:reservation ,)
+
+        );
+      },
+      child: Card(
+        elevation: 4,
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    reservation.fullname,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              _buildInfoRow(Icons.phone, "Phone: ${reservation.phone}"),
+              _buildInfoRow(Icons.email, "Email: ${reservation.email}"),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildGuestCount(Icons.person, "Adults", reservation.adult),
+                  _buildGuestCount(Icons.child_care, "Children", reservation.child),
+                  _buildGuestCount(Icons.pets, "Pets", reservation.pet),
+                ],
+              ),
+              Divider(thickness: 1, height: 16),
+              _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
+              _buildPriceRow("Prepayment", reservation.prepayment),
+              _buildPriceRow("Balance", reservation.balance, isBold: true, color: Colors.red),
+            ],
+          ),
         ),
       ),
     );

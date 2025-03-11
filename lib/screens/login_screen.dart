@@ -14,14 +14,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final UserController userController = Get.find<UserController>(); // ✅ Use singleton instance
+  final UserController userController =
+      Get.find<UserController>(); // ✅ Use singleton instance
   var isProcessing = false.obs; // ✅ Prevent multiple clicks
 
   @override
   void initState() {
     super.initState();
   }
-
 
   /// ✅ **Login Logic**
   void _login() async {
@@ -33,19 +33,24 @@ class _LoginScreenState extends State<LoginScreen> {
       String password = passwordController.text.trim();
 
       var user = userController.loginUserList.firstWhereOrNull(
-            (user) => user.username == username && user.password == password,
+        (user) => user.username == username && user.password == password,
       );
 
       if (user != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true); // ✅ Save login session
-        await prefs.setString('userId', userController.loginUserList.first.id.toString()); // ✅ Save login session
+        await prefs.setString(
+            'userId',
+            userController.loginUserList.first.id
+                .toString()); // ✅ Save login session
         await prefs.setString('username', username);
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login Successful!")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Login Successful!")));
         Get.off(() => MainScreen()); // ✅ Navigate to Home
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Invalid Credentials!")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Invalid Credentials!")));
       }
 
       isProcessing.value = false;
@@ -72,26 +77,33 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/logo.jpg', height: 200), // ✅ Replace with your logo
-            SizedBox(height: 50,),
+                  Image.asset('assets/logo.jpg', height: 200),
+                  // ✅ Replace with your logo
+                  SizedBox(
+                    height: 50,
+                  ),
                   TextFormField(
                     controller: usernameController,
                     decoration: _inputDecoration("Username"),
-                    validator: (value) => value!.isEmpty ? "Enter username" : null,
+                    validator: (value) =>
+                        value!.isEmpty ? "Enter username" : null,
                   ),
                   SizedBox(height: 10),
                   TextFormField(
                     controller: passwordController,
                     decoration: _inputDecoration("Password"),
                     obscureText: true,
-                    validator: (value) => value!.length < 6 ? "Password must be 6+ chars" : null,
+                    validator: (value) =>
+                        value!.length < 6 ? "Password must be 6+ chars" : null,
                   ),
                   SizedBox(height: 20),
                   Obx(() => isProcessing.value
                       ? CircularProgressIndicator()
-                      : ElevatedButton(onPressed: _login, child: Text("Login"))),
+                      : ElevatedButton(
+                          onPressed: _login, child: Text("Login"))),
                   TextButton(
-                    onPressed: () => Get.off(() => SignupScreen()), // ✅ GetX navigation
+                    onPressed: () => Get.off(() => SignupScreen()),
+                    // ✅ GetX navigation
                     child: Text("Don't have an account? Signup"),
                   ),
                 ],

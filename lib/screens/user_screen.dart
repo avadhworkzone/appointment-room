@@ -13,7 +13,7 @@ class UserScreen extends StatelessWidget {
 
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController fullnameController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
   var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
   void showUserDialog({UserModel? user}) {
@@ -33,86 +33,103 @@ class UserScreen extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                user == null ? "Add User" : "Edit User",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-
-              // Full Name Field with Validation
-              TextField(
-                controller: fullnameController,
-                decoration: InputDecoration(
-                  labelText: "Full Name",
-                  border: OutlineInputBorder(), // ✅ Outline Border
-                  prefixIcon: Icon(Icons.person), // ✅ Icon for better UI
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  user == null ? "Add User" : "Edit User",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                keyboardType: TextInputType.name,
-              ),
-              SizedBox(height: 10),
+                SizedBox(height: 10),
 
-              // Mobile Number Field with Validation
-              TextField(
-                controller: mobileController,
-                decoration: InputDecoration(
-                  labelText: "Mobile Number",
-                  border: OutlineInputBorder(), // ✅ Outline Border
-                  prefixIcon: Icon(Icons.phone), // ✅ Icon for better UI
+                // Full Name Field with Validation
+                TextFormField(
+                  controller: fullnameController,
+                  validator: (value) =>
+                  value!.isEmpty ? "Enter name" : null,
+                  decoration: InputDecoration(
+                    labelText: "Full Name",
+                    border: OutlineInputBorder(), // ✅ Outline Border
+                    prefixIcon: Icon(Icons.person), // ✅ Icon for better UI
+                  ),
+                  keyboardType: TextInputType.name,
                 ),
-                keyboardType: TextInputType.phone,
-                maxLength: 10, // ✅ Limit to 10 digits
-              ),
-              SizedBox(height: 10),
+                SizedBox(height: 10),
 
-              Obx(() => ElevatedButton(
-                onPressed: isProcessing.value
-                    ? null
-                    : () async {
-                  // ✅ Validation
-                  String mobilePattern = r'^[0-9]{10}$'; // Only 10-digit numbers
-                  RegExp regExp = RegExp(mobilePattern);
+                // Mobile Number Field with Validation
+                TextFormField(
+                  controller: mobileController,
+                  validator: (value) {
+                      if(value!.isEmpty){
+                        return "Enter mobile number";
+                      }
+                     else if(value.length < 10 ||value.length > 10){
+                      return "Phone number must be 10 digits";
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    labelText: "Mobile Number",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10, // ✅ Limit to 10 digits
+                ),
+                SizedBox(height: 10),
 
-                  if (fullnameController.text.trim().isEmpty) {
-                    Get.snackbar("Error", "Full Name is required");
-                    return;
-                  }
-                  if (!regExp.hasMatch(mobileController.text.trim())) {
-                    Get.snackbar("Error", "Enter a valid 10-digit mobile number");
-                    return;
-                  }
+                Obx(() => ElevatedButton(
+                  onPressed: isProcessing.value
+                      ? null
+                      : () async {
+                    if(_formKey.currentState!.validate()){
+                      // ✅ Validation
+                      String mobilePattern = r'^[0-9]{10}$'; // Only 10-digit numbers
+                      RegExp regExp = RegExp(mobilePattern);
 
-                  isProcessing.value = true; // ✅ Prevent multiple clicks
-                  await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
+                      if (fullnameController.text.trim().isEmpty) {
+                        Get.snackbar("Error", "Full Name is required");
+                        return;
+                      }
+                      if (!regExp.hasMatch(mobileController.text.trim())) {
+                        Get.snackbar("Error", "Enter a valid 10-digit mobile number");
+                        return;
+                      }
 
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  var userId = prefs.getString('userId') ?? "";
-                  print('user id ---> $userId');
+                      isProcessing.value = true; // ✅ Prevent multiple clicks
+                      await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
 
-                  if (user == null) {
-                    await userController.addUser(UserModel(
-                      mobileNumber: mobileController.text.trim(),
-                      userId: userId,
-                      fullname: fullnameController.text.trim(),
-                    ));
-                  } else {
-                    await userController.updateUser(UserModel(
-                      id: user.id,
-                      userId: userId,
-                      mobileNumber: mobileController.text.trim(),
-                      fullname: fullnameController.text.trim(),
-                    ));
-                  }
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      var userId = prefs.getString('userId') ?? "";
+                      print('user id ---> $userId');
 
-                  await userController.fetchUsers(); // ✅ Update list immediately
-                  isProcessing.value = false;
-                  Get.back();
-                },
-                child: Text(user == null ? "Add User" : "Update User"),
-              )),
-            ],
+                      if (user == null) {
+                        await userController.addUser(UserModel(
+                          mobileNumber: mobileController.text.trim(),
+                          userId: userId,
+                          fullname: fullnameController.text.trim(),
+                        ));
+                      } else {
+                        await userController.updateUser(UserModel(
+                          id: user.id,
+                          userId: userId,
+                          mobileNumber: mobileController.text.trim(),
+                          fullname: fullnameController.text.trim(),
+                        ));
+                      }
+
+                      await userController.fetchUsers(); // ✅ Update list immediately
+                      isProcessing.value = false;
+                      Get.back();
+                    }
+
+                  },
+                  child: Text(user == null ? "Add User" : "Update User"),
+                )),
+              ],
+            ),
           ),
         ),
       ),
