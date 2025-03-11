@@ -4,6 +4,8 @@ import '../controller/room_controller.dart';
 import '../controller/user_controller.dart';
 import '../model/room_model.dart';
 import 'export_pdf.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class RoomScreen extends StatelessWidget {
   final RoomController roomController = Get.find<RoomController>(); // ✅ Use Get.find() to avoid multiple instances
@@ -11,7 +13,6 @@ class RoomScreen extends StatelessWidget {
 
   final TextEditingController roomNameController = TextEditingController();
   final TextEditingController roomDescController = TextEditingController();
-  final TextEditingController userIdController = TextEditingController();
 
   var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
@@ -19,11 +20,9 @@ class RoomScreen extends StatelessWidget {
     if (room != null) {
       roomNameController.text = room.roomName;
       roomDescController.text = room.roomDesc;
-      userIdController.text = room.userId.toString();
     } else {
       roomNameController.clear();
       roomDescController.clear();
-      userIdController.clear();
     }
 
     Get.bottomSheet(
@@ -38,34 +37,39 @@ class RoomScreen extends StatelessWidget {
           children: [
             Text(room == null ? "Add Room" : "Edit Room",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            TextField(controller: roomNameController, decoration: InputDecoration(labelText: "Room Name")),
-            TextField(controller: roomDescController, decoration: InputDecoration(labelText: "Room Description")),
-            TextField(controller: userIdController, decoration: InputDecoration(labelText: "User ID"), keyboardType: TextInputType.number),
+            SizedBox(height: 20),
+
+            TextField(controller: roomNameController, decoration: InputDecoration(labelText: "Room Name", border: OutlineInputBorder(),),),
             SizedBox(height: 10),
+
+            TextField(controller: roomDescController, decoration: InputDecoration(labelText: "Room Description", border: OutlineInputBorder(),)),
+            SizedBox(height: 20),
             Obx(() => ElevatedButton(
               onPressed: isProcessing.value
                   ? null
                   : () async {
-                if (roomNameController.text.isEmpty || userIdController.text.isEmpty) {
-                  Get.snackbar("Error", "Room Name and User ID are required");
+                if (roomNameController.text.isEmpty) {
+                  Get.snackbar("Error", "Room Name is required");
                   return;
                 }
 
                 isProcessing.value = true; // ✅ Prevent multiple clicks
-                await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
-
+                // await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                var userId = prefs.getString('userId') ?? "";
+                print('user id ---> $userId');
                 if (room == null) {
                   await roomController.addRoom(RoomModel(
                     roomName: roomNameController.text,
                     roomDesc: roomDescController.text,
-                    userId: int.parse(userIdController.text),
+                    userId: int.parse(userId),
                   ));
                 } else {
                   await roomController.updateRoom(RoomModel(
                     id: room.id,
                     roomName: roomNameController.text,
                     roomDesc: roomDescController.text,
-                    userId: int.parse(userIdController.text),
+                    userId: int.parse(userId),
                   ));
                 }
 
@@ -122,7 +126,8 @@ class RoomScreen extends StatelessWidget {
                   margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                   child: ListTile(
                     title: Text(room.roomName, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
+                    // subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
+                    subtitle: Text("${room.roomDesc}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

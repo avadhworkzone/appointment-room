@@ -46,7 +46,7 @@ class DBHelper {
         room_name TEXT NOT NULL,
         room_desc TEXT,
         user_id INTEGER NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES Users(id)
+        FOREIGN KEY (user_id) REFERENCES LoginUsers(id)
       );
     ''');
 
@@ -69,7 +69,7 @@ class DBHelper {
         grandtotal REAL NOT NULL,
         prepayment REAL NOT NULL,
         balance REAL NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES Users(id)
+        FOREIGN KEY (user_id) REFERENCES LoginUsers(id)
       );
     ''');
   }
