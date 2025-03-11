@@ -55,11 +55,11 @@ class RoomController extends GetxController {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    if (!(await _doesUserExist(room.userId))) {
-      Get.snackbar("Error", "User ID ${room.userId} does not exist.");
-      isProcessing.value = false;
-      return;
-    }
+    // if (!(await _doesUserExist(room.userId))) {
+    //   Get.snackbar("Error", "User ID ${room.userId} does not exist.");
+    //   isProcessing.value = false;
+    //   return;
+    // }
 
     await DBHelper.database.then((db) async {
       await db.transaction((txn) async {

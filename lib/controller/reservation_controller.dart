@@ -37,12 +37,12 @@ class ReservationController extends GetxController {
   Future<void> addReservation(ReservationModel reservation) async {
     if (isProcessing.value) return;
     isProcessing.value = true;
-
-    if (!(await _doesUserExist(reservation.userId))) {
-      Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Please create the user first.");
-      isProcessing.value = false;
-      return;
-    }
+    //
+    // if (!(await _doesUserExist(reservation.userId))) {
+    //   Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Please create the user first.");
+    //   isProcessing.value = false;
+    //   return;
+    // }
 
     try {
       await DBHelper.database.then((db) async {
@@ -64,11 +64,11 @@ class ReservationController extends GetxController {
     if (isProcessing.value) return;
     isProcessing.value = true;
 
-    if (!(await _doesUserExist(reservation.userId))) {
-      Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Update failed.");
-      isProcessing.value = false;
-      return;
-    }
+    // if (!(await _doesUserExist(reservation.userId))) {
+    //   Get.snackbar("Error", "User ID ${reservation.userId} does not exist. Update failed.");
+    //   isProcessing.value = false;
+    //   return;
+    // }
 
     try {
       await DBHelper.database.then((db) async {
