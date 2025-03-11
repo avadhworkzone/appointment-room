@@ -51,26 +51,27 @@ class DBHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE Reservations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        checkin TEXT NOT NULL,
-        checkout TEXT NOT NULL,
-        fullname TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        email TEXT NOT NULL,
-        adult INTEGER NOT NULL,
-        child INTEGER NOT NULL,
-        pet INTEGER NOT NULL,
-        ratepernight REAL NOT NULL,
-        subtotal REAL NOT NULL,
-        discount REAL NOT NULL,
-        tax REAL NOT NULL,
-        grandtotal REAL NOT NULL,
-        prepayment REAL NOT NULL,
-        balance REAL NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES LoginUsers(id)
-      );
+     CREATE TABLE IF NOT EXISTS Reservations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  checkin TEXT NOT NULL,
+  checkout TEXT NOT NULL,
+  fullname TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT NOT NULL,
+  adult INTEGER NOT NULL,
+  child INTEGER NOT NULL,
+  pet INTEGER NOT NULL,
+  ratepernight REAL NOT NULL,
+  subtotal REAL NOT NULL,
+  discount REAL NOT NULL,
+  tax REAL NOT NULL,
+  grandtotal REAL NOT NULL,
+  prepayment REAL NOT NULL,
+  balance REAL NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES LoginUsers(id) ON DELETE CASCADE
+);
+
     ''');
   }
 

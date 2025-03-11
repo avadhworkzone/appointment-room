@@ -108,7 +108,7 @@ class RoomScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Rooms")),
-      floatingActionButton:userController.userList.isEmpty?SizedBox(): FloatingActionButton(
+      floatingActionButton:FloatingActionButton(
         onPressed: () => showRoomDialog(),
         child: Icon(Icons.add),
       ),

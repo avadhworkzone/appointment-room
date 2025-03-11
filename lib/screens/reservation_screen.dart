@@ -1,66 +1,244 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
-import '../controller/user_controller.dart';
 import '../model/reservation_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class ReservationScreen extends StatelessWidget {
   final ReservationController reservationController = Get.find<ReservationController>();
-  final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
+  DateTime? _checkinDate;
+  DateTime? _checkoutDate;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Reservations")),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await showReservationDialog();
+          await reservationController.fetchReservations(); // Refresh the list
+        },
+        child: Icon(Icons.add),
+      ),
+      body: Obx(() => reservationController.reservationList.isEmpty
+          ? Center(child: Text("No reservations found. Add a new reservation!"))
+          : ListView.builder(
+        itemCount: reservationController.reservationList.length,
+        itemBuilder: (context, index) {
+          final reservation = reservationController.reservationList[index];
+          return _buildReservationCard(reservation);
+        },
+      )),
+    );
+  }
 
-  final _formKey = GlobalKey<FormState>();
+  /// ✅ **Reservation Card View**
+  Widget _buildReservationCard(ReservationModel reservation) {
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// 🔹 **Guest Name & Actions**
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  reservation.fullname,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () => showReservationDialog(reservation: reservation),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteReservation(reservation.id!),
+                    ),
+                  ],
+                ),
+              ],
+            ),
 
-  final TextEditingController checkinController = TextEditingController();
-  final TextEditingController checkoutController = TextEditingController();
-  final TextEditingController fullnameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController rateController = TextEditingController();
-  final TextEditingController discountController = TextEditingController();
-  final TextEditingController prepaymentController = TextEditingController();
+            SizedBox(height: 8),
 
-  var adultCount = 1.obs;
-  var childCount = 0.obs;
-  var petCount = 0.obs;
-  var isProcessing = false.obs;
+            /// 🔹 **Check-in & Check-out Dates**
+            _buildInfoRow(Icons.calendar_today, "Check-in: ${reservation.checkin}"),
+            _buildInfoRow(Icons.calendar_today_outlined, "Check-out: ${reservation.checkout}"),
 
-  var subtotal = 0.0.obs;
-  var tax = 0.0.obs;
-  var grandTotal = 0.0.obs;
-  var balance = 0.0.obs;
+            SizedBox(height: 8),
 
-  /// ✅ **Validates form and date selection**
-  bool _validateForm() {
-    if (!_formKey.currentState!.validate()) return false;
+            /// 🔹 **Guest Contact Details**
+            _buildInfoRow(Icons.phone, "Phone: ${reservation.phone}"),
+            _buildInfoRow(Icons.email, "Email: ${reservation.email}"),
 
-    if (checkinController.text.isNotEmpty && checkoutController.text.isNotEmpty) {
-      DateTime checkin = DateFormat('yyyy-MM-dd').parse(checkinController.text);
-      DateTime checkout = DateFormat('yyyy-MM-dd').parse(checkoutController.text);
+            SizedBox(height: 8),
 
-      if (checkout.isBefore(checkin)) {
-        Get.snackbar("Invalid Date", "Checkout date cannot be before Check-in date.");
-        return false;
+            /// 🔹 **Guest Count (Adults, Children, Pets)**
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildGuestCount(Icons.person, "Adults", reservation.adult),
+                _buildGuestCount(Icons.child_care, "Children", reservation.child),
+                _buildGuestCount(Icons.pets, "Pets", reservation.pet),
+              ],
+            ),
+
+            Divider(thickness: 1, height: 16),
+
+            /// 🔹 **Pricing Details**
+            _buildPriceRow("Rate per Night", reservation.ratePerNight),
+            _buildPriceRow("Subtotal", reservation.subtotal),
+            _buildPriceRow("Tax (5%)", reservation.tax),
+            _buildPriceRow("Discount", reservation.discount),
+            _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
+            _buildPriceRow("Prepayment", reservation.prepayment),
+            _buildPriceRow("Balance", reservation.balance, isBold: true, color: Colors.red),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ✅ **Builds Row for Info (Check-in, Contact, Email)**
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey[700]),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 16),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// ✅ **Builds Guest Count Row (Adults, Children, Pets)**
+  Widget _buildGuestCount(IconData icon, String label, int count) {
+    return Column(
+      children: [
+        Icon(icon, size: 24, color: Colors.blue),
+        SizedBox(height: 4),
+        Text("$count", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey)),
+      ],
+    );
+  }
+
+  /// ✅ **Builds Price Row (Rate, Subtotal, Tax, Grand Total, etc.)**
+  Widget _buildPriceRow(String label, double value, {bool isBold = false, Color color = Colors.black}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
+          ),
+          Text(
+            "\$${value.toStringAsFixed(2)}",
+            style: TextStyle(fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ✅ **Delete Reservation with Confirmation**
+  void _deleteReservation(int reservationId) {
+    Get.defaultDialog(
+      title: "Delete Reservation",
+      middleText: "Are you sure you want to delete this reservation?",
+      textConfirm: "Yes",
+      textCancel: "No",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        await reservationController.deleteReservation(reservationId);
+        Get.back();
+        await reservationController.fetchReservations();
+
+      },
+    );
+  }
+
+  /// ✅ Show Add/Edit Reservation Dialog
+  Future<void> showReservationDialog({ReservationModel? reservation}) async {
+    TextEditingController checkinController = TextEditingController();
+    TextEditingController checkoutController = TextEditingController();
+    TextEditingController fullnameController = TextEditingController();
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController emailController = TextEditingController();
+    TextEditingController rateController = TextEditingController();
+    TextEditingController discountController = TextEditingController();
+    TextEditingController prepaymentController = TextEditingController();
+
+    DateTime? _checkinDate;
+    DateTime? _checkoutDate;
+
+    var adultCount = 1.obs;
+    var childCount = 0.obs;
+    var petCount = 0.obs;
+    var subtotal = 0.0.obs;
+    var tax = 0.0.obs;
+    var grandTotal = 0.0.obs;
+    var balance = 0.0.obs;
+    /// ✅ **Pick a date and validate it**
+    Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
+      DateTime initialDate = isCheckIn
+          ? DateTime.now() // Check-in starts today
+          : _checkinDate ?? DateTime.now().add(Duration(days: 1)); // Check-out starts after check-in
+
+      DateTime firstDate = isCheckIn
+          ? DateTime.now() // Check-in cannot be before today
+          : _checkinDate ?? DateTime.now(); // Check-out must be after check-in
+
+      DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: firstDate,
+        lastDate: DateTime(2100),
+      );
+
+      if (pickedDate != null) {
+        if (isCheckIn) {
+          _checkinDate = pickedDate;
+          checkinController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+
+          // Auto-reset checkout if it's before the check-in
+          if (_checkoutDate != null && _checkoutDate!.isBefore(_checkinDate!)) {
+            _checkoutDate = _checkinDate!.add(Duration(days: 1));
+            checkoutController.text = DateFormat('yyyy-MM-dd').format(_checkoutDate!);
+          }
+        } else {
+          _checkoutDate = pickedDate;
+          checkoutController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        }
       }
     }
-    return true;
-  }
+    /// ✅ **Calculates Tax, Grand Total & Balance**
+    void _calculateTotal() {
+      double rate = double.tryParse(rateController.text) ?? 0.0;
+      double discount = double.tryParse(discountController.text) ?? 0.0;
+      double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
 
-  /// ✅ **Calculates Tax, Grand Total & Balance**
-  void _calculateTotal() {
-    double rate = double.tryParse(rateController.text) ?? 0.0;
-    double discount = double.tryParse(discountController.text) ?? 0.0;
-    double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
+      subtotal.value = rate;
+      tax.value = subtotal.value * 0.05; // 5% Tax
+      grandTotal.value = (subtotal.value - discount) + tax.value;
+      balance.value = grandTotal.value - prepayment;
+    }
 
-    subtotal.value = rate;
-    tax.value = subtotal.value * 0.05; // 5% Tax
-    grandTotal.value = (subtotal.value - discount) + tax.value;
-    balance.value = grandTotal.value - prepayment;
-  }
 
-  /// ✅ **Show Add/Edit Reservation Dialog**
-  void showReservationDialog({ReservationModel? reservation}) {
+    /// ✅ **Pre-fill data when editing a reservation**
     if (reservation != null) {
       checkinController.text = reservation.checkin;
       checkoutController.text = reservation.checkout;
@@ -73,98 +251,106 @@ class ReservationScreen extends StatelessWidget {
       adultCount.value = reservation.adult;
       childCount.value = reservation.child;
       petCount.value = reservation.pet;
+      _calculateTotal();
     } else {
-      checkinController.clear();
-      checkoutController.clear();
-      fullnameController.clear();
-      phoneController.clear();
-      emailController.clear();
-      rateController.text = "100"; // Default Rate
+      rateController.text = "100"; // Default rate
       discountController.text = "0";
       prepaymentController.text = "0";
-
-      adultCount.value = 1;
-      childCount.value = 0;
-      petCount.value = 0;
+      _calculateTotal();
     }
 
-    // ✅ **Add listeners to update total dynamically**
+
+    /// ✅ **Call `_calculateTotal()` whenever rate, discount, or prepayment changes**
+    rateController.addListener(_calculateTotal);
     discountController.addListener(_calculateTotal);
     prepaymentController.addListener(_calculateTotal);
-    rateController.addListener(_calculateTotal);
-
-    _calculateTotal(); // Ensure values are calculated initially
 
     Get.bottomSheet(
-      Form(
-        key: _formKey,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(Get.context!).unfocus(),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                reservation == null ? "Add Reservation" : "Edit Reservation",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              _buildTextField(fullnameController, "Full Name"),
+              _buildTextField(phoneController, "Phone"),
+              _buildTextField(emailController, "Email"),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox(height: 30),
-                  Text(
-                    reservation == null ? "Add Reservation" : "Edit Reservation",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  _buildTextField(fullnameController, "Full Name", TextInputType.text, r'^[a-zA-Z\s]+$', "Enter valid name"),
-                  _buildTextField(phoneController, "Phone", TextInputType.phone, r'^\d{10,15}$', "Enter valid phone number (10-15 digits)"),
-                  _buildTextField(emailController, "Email", TextInputType.emailAddress, r'^\S+@\S+\.\S+$', "Enter a valid email"),
-                  _buildTextField(rateController, "Rate Per Night", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid rate"),
-                  _buildTextField(discountController, "Discount", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid discount"),
-                  _buildTextField(prepaymentController, "Prepayment", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid prepayment"),
-                  SizedBox(height: 10),
-                  Obx(() => Column(
-                    children: [
-                      _buildSummaryRow("Subtotal", subtotal.value),
-                      _buildSummaryRow("Tax (5%)", tax.value),
-                      _buildSummaryRow("Grand Total", grandTotal.value, isBold: true),
-                      _buildSummaryRow("Balance", balance.value, isBold: true, color: Colors.red),
-                    ],
-                  )),
-                  SizedBox(height: 10),
-                  Obx(() => ElevatedButton(
-                    onPressed: isProcessing.value ? null : () async {
-                      if (!_validateForm()) return;
-                      isProcessing.value = true;
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                      var userId = prefs.getString('userId') ?? "";
-                      print('user id ---> $userId');
-                      await reservationController.addReservation(ReservationModel(
-                        userId: int.parse(userId),
-                        checkin: checkinController.text,
-                        checkout: checkoutController.text,
-                        fullname: fullnameController.text,
-                        phone: phoneController.text,
-                        email: emailController.text,
-                        adult: adultCount.value,
-                        child: childCount.value,
-                        pet: petCount.value,
-                        ratePerNight: double.parse(rateController.text),
-                        subtotal: subtotal.value,
-                        discount: double.parse(discountController.text),
-                        tax: tax.value,
-                        grandTotal: grandTotal.value,
-                        prepayment: double.parse(prepaymentController.text),
-                        balance: balance.value,
-                      ));
-                      isProcessing.value = false;
-                      Get.back();
-                    },
-                    child: Text(reservation == null ? "Add Reservation" : "Update Reservation"),
-                  )),
+                  _buildCounter("Adults", adultCount),
+                  _buildCounter("Children", childCount),
+                  _buildCounter("Pets", petCount),
                 ],
               ),
-            ),
+              SizedBox(height: 10),
+
+              /// ✅ **Check-in & Check-out Date Fields**
+              Row(
+                children: [
+                  Expanded(child: _buildDateField("Check-in Date", checkinController, () => _selectDate(Get.context!, true))),
+                  SizedBox(width: 20),
+                  Expanded(child: _buildDateField("Check-out Date", checkoutController, () => _selectDate(Get.context!, false))),
+                ],
+              ),
+              SizedBox(height: 20),
+
+              _buildTextField(rateController, "Rate Per Night"),
+              _buildTextField(discountController, "Discount"),
+              _buildTextField(prepaymentController, "Prepayment"),
+              SizedBox(height: 10),
+              Obx(() => Column(
+                children: [
+                  _buildSummaryRow("Subtotal", subtotal.value),
+                  _buildSummaryRow("Tax (5%)", tax.value),
+                  _buildSummaryRow("Grand Total", grandTotal.value, isBold: true),
+                  _buildSummaryRow("Balance", balance.value, isBold: true, color: Colors.red),
+                ],
+              )),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  ReservationModel newReservation = ReservationModel(
+                    userId: 1, // Replace with actual user ID logic
+                    checkin: checkinController.text,
+                    checkout: checkoutController.text,
+                    fullname: fullnameController.text,
+                    phone: phoneController.text,
+                    email: emailController.text,
+                    adult: adultCount.value,
+                    child: childCount.value,
+                    pet: petCount.value,
+                    ratePerNight: double.parse(rateController.text),
+                    subtotal: subtotal.value,
+                    discount: double.parse(discountController.text),
+                    tax: tax.value,
+                    grandTotal: grandTotal.value,
+                    prepayment: double.parse(prepaymentController.text),
+                    balance: balance.value,
+                  );
+
+                  if (reservation == null) {
+                    await reservationController.addReservation(newReservation);
+                  } else {
+                    newReservation.id = reservation.id;
+                    await reservationController.updateReservation(newReservation);
+                  }
+                  Get.back();
+                  await reservationController.fetchReservations();
+                },
+                child: Text(reservation == null ? "Add Reservation" : "Update Reservation"),
+              ),
+            ],
           ),
         ),
       ),
@@ -172,43 +358,66 @@ class ReservationScreen extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Reservations")),
-      floatingActionButton: userController.userList.isEmpty?SizedBox():FloatingActionButton(
-        onPressed: () => showReservationDialog(),
-        child: Icon(Icons.add),
+
+/// ✅ **Reusable Date Picker Field**
+  Widget _buildDateField(String label, TextEditingController controller, VoidCallback onTap) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+        suffixIcon: Icon(Icons.calendar_today),
       ),
-      body: Obx(() => reservationController.reservationList.isEmpty
-          ? Center(child: Text("No reservations found. Add a new reservation!"))
-          : ListView.builder(
-        itemCount: reservationController.reservationList.length,
-        itemBuilder: (context, index) {
-          final reservation = reservationController.reservationList[index];
-          return ListTile(
-            title: Text(reservation.fullname),
-            subtitle: Text("Check-in: ${reservation.checkin}, Check-out: ${reservation.checkout}"),
-          );
-        },
-      )),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return "Please select $label";
+        }
+        return null;
+      },
+      onTap: onTap,
     );
   }
 
-  /// ✅ **Reusable TextField**
-  Widget _buildTextField(TextEditingController controller, String label, TextInputType type, String pattern, String errorMessage) {
+  /// ✅ Reusable TextField
+  Widget _buildTextField(TextEditingController controller, String label) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8),
       child: TextFormField(
         controller: controller,
         decoration: InputDecoration(labelText: label, border: OutlineInputBorder()),
-        keyboardType: type,
-        validator: (value) => RegExp(pattern).hasMatch(value!) ? null : errorMessage,
       ),
     );
   }
 
-  /// ✅ **Builds UI for Summary Fields**
+  /// ✅ Counter Widget
+  Widget _buildCounter(String label, RxInt count) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            IconButton(
+              onPressed: () {
+                if (count.value > 0) count.value--;
+              },
+              icon: Icon(Icons.remove_circle_outline, color: Colors.red),
+            ),
+            Obx(() => Text(count.value.toString(), style: TextStyle(fontSize: 18))),
+            IconButton(
+              onPressed: () {
+                count.value++;
+              },
+              icon: Icon(Icons.add_circle_outline, color: Colors.green),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+  /// ✅ Summary Row Widget
   Widget _buildSummaryRow(String label, double value, {bool isBold = false, Color color = Colors.black}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
@@ -221,5 +430,32 @@ class ReservationScreen extends StatelessWidget {
       ),
     );
   }
+  // Widget _buildDateField(
+  //     TextEditingController controller, String label,) {
+  //   return Padding(
+  //     padding: EdgeInsets.only(bottom: 8),
+  //     child: TextFormField(
+  //       controller: controller,
+  //       readOnly: true, // Prevent manual text input
+  //       decoration: InputDecoration(
+  //         labelText: label,
+  //         border: OutlineInputBorder(),
+  //         suffixIcon: Icon(Icons.calendar_today), // Calendar icon
+  //       ),
+  //       onTap: () async {
+  //         DateTime? pickedDate = await showDatePicker(
+  //           context: Get.context!,
+  //           initialDate: DateTime.now(),
+  //           firstDate: DateTime.now(), // Prevent past dates
+  //           lastDate: DateTime(2100),
+  //         );
+  //
+  //         if (pickedDate != null) {
+  //           controller.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+  //         }
+  //       },
+  //     ),
+  //   );
+  // }
 
 }

@@ -31,8 +31,7 @@ class BadgeController extends GetxController {
     calendarBadge.value = reservationController.reservationList.length;
     roomsBadge.value = roomController.roomList.length;
     reservationsBadge.value = reservationController.reservationList
-        .where((res) => DateTime.tryParse(res.checkin)?.isAtSameMomentAs(DateTime.now()) ?? false)
-        .length;
+       .length;
     usersBadge.value = userController.userList.length;
     settingsBadge.value = 0; // Reserved for future updates
   }

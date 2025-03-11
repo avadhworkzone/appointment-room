@@ -21,7 +21,7 @@ class UserController extends GetxController {
 
     final users = await DBHelper.getUsers();
     userList.assignAll(users.map((e) => UserModel.fromMap(e)).toList());
-print('userList---$userList');
+// print('userList---$userList');
     isProcessing.value = false;
   }
 
