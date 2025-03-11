@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
 import '../controller/user_controller.dart';
 import '../model/reservation_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservationScreen extends StatelessWidget {
   final ReservationController reservationController = Get.find<ReservationController>();
@@ -11,7 +12,6 @@ class ReservationScreen extends StatelessWidget {
 
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController userIdController = TextEditingController();
   final TextEditingController checkinController = TextEditingController();
   final TextEditingController checkoutController = TextEditingController();
   final TextEditingController fullnameController = TextEditingController();
@@ -62,7 +62,6 @@ class ReservationScreen extends StatelessWidget {
   /// ✅ **Show Add/Edit Reservation Dialog**
   void showReservationDialog({ReservationModel? reservation}) {
     if (reservation != null) {
-      userIdController.text = reservation.userId.toString();
       checkinController.text = reservation.checkin;
       checkoutController.text = reservation.checkout;
       fullnameController.text = reservation.fullname;
@@ -74,10 +73,7 @@ class ReservationScreen extends StatelessWidget {
       adultCount.value = reservation.adult;
       childCount.value = reservation.child;
       petCount.value = reservation.pet;
-
-      _calculateTotal();
     } else {
-      userIdController.clear();
       checkinController.clear();
       checkoutController.clear();
       fullnameController.clear();
@@ -85,22 +81,25 @@ class ReservationScreen extends StatelessWidget {
       emailController.clear();
       rateController.text = "100"; // Default Rate
       discountController.text = "0";
-      prepaymentController.text = "50";
+      prepaymentController.text = "0";
 
       adultCount.value = 1;
       childCount.value = 0;
       petCount.value = 0;
-
-      _calculateTotal();
     }
+
+    // ✅ **Add listeners to update total dynamically**
+    discountController.addListener(_calculateTotal);
+    prepaymentController.addListener(_calculateTotal);
+    rateController.addListener(_calculateTotal);
+
+    _calculateTotal(); // Ensure values are calculated initially
 
     Get.bottomSheet(
       Form(
         key: _formKey,
         child: GestureDetector(
-          onTap: () {
-            FocusScope.of(Get.context!).unfocus();
-          },
+          onTap: () => FocusScope.of(Get.context!).unfocus(),
           child: Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -111,23 +110,19 @@ class ReservationScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  SizedBox(height: 30),
                   Text(
                     reservation == null ? "Add Reservation" : "Edit Reservation",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 10),
-
-                  _buildTextField(userIdController, "User ID", TextInputType.number, r'^\d+$', "Enter valid User ID"),
+                  SizedBox(height: 20),
                   _buildTextField(fullnameController, "Full Name", TextInputType.text, r'^[a-zA-Z\s]+$', "Enter valid name"),
                   _buildTextField(phoneController, "Phone", TextInputType.phone, r'^\d{10,15}$', "Enter valid phone number (10-15 digits)"),
                   _buildTextField(emailController, "Email", TextInputType.emailAddress, r'^\S+@\S+\.\S+$', "Enter a valid email"),
                   _buildTextField(rateController, "Rate Per Night", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid rate"),
                   _buildTextField(discountController, "Discount", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid discount"),
                   _buildTextField(prepaymentController, "Prepayment", TextInputType.number, r'^\d+(\.\d{1,2})?$', "Enter valid prepayment"),
-
                   SizedBox(height: 10),
-
-                  /// ✅ **Auto Calculated Fields**
                   Obx(() => Column(
                     children: [
                       _buildSummaryRow("Subtotal", subtotal.value),
@@ -136,17 +131,16 @@ class ReservationScreen extends StatelessWidget {
                       _buildSummaryRow("Balance", balance.value, isBold: true, color: Colors.red),
                     ],
                   )),
-
                   SizedBox(height: 10),
                   Obx(() => ElevatedButton(
-                    onPressed: isProcessing.value
-                        ? null
-                        : () async {
+                    onPressed: isProcessing.value ? null : () async {
                       if (!_validateForm()) return;
                       isProcessing.value = true;
-
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      var userId = prefs.getString('userId') ?? "";
+                      print('user id ---> $userId');
                       await reservationController.addReservation(ReservationModel(
-                        userId: int.parse(userIdController.text),
+                        userId: int.parse(userId),
                         checkin: checkinController.text,
                         checkout: checkoutController.text,
                         fullname: fullnameController.text,
@@ -163,7 +157,6 @@ class ReservationScreen extends StatelessWidget {
                         prepayment: double.parse(prepaymentController.text),
                         balance: balance.value,
                       ));
-
                       isProcessing.value = false;
                       Get.back();
                     },
