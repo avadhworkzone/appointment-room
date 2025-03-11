@@ -16,6 +16,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
   Map<DateTime, List<ReservationModel>> _eventsMap = {};
+  late Worker _reservationListener; // To store the listener reference
 
   @override
   void initState() {
@@ -23,9 +24,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadEvents();
 
     // Listen for reservation list changes
-    ever(reservationController.reservationList, (_) {
-      _loadEvents();
+    _reservationListener = ever(reservationController.reservationList, (_) {
+      if (mounted) {
+        _loadEvents();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _reservationListener.dispose(); // Remove the listener when widget is disposed
+    super.dispose();
   }
 
   DateTime _parseDate(String dateString) {
@@ -44,6 +53,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _loadEvents() {
+    if (!mounted) return; // Prevent updating UI after dispose
     setState(() {
       _eventsMap.clear();
       for (var res in reservationController.reservationList) {
@@ -69,10 +79,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              }
             },
             availableGestures: AvailableGestures.horizontalSwipe,
             headerVisible: false,
@@ -104,10 +116,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildReservationCard(ReservationModel reservation) {
     return InkWell(
       onTap: () {
-        Get.to(()=>
-        ReservationDetailScreen(reservation:reservation ,)
-
-        );
+        Get.to(() => ReservationDetailScreen(reservation: reservation));
       },
       child: Card(
         elevation: 4,

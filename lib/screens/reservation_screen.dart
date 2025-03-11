@@ -19,9 +19,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
   initMethod()async{
-
     await reservationController.fetchReservations();
-   
   }
 
   @override
@@ -442,8 +440,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                       }
                       Get.back();
                       await reservationController.fetchReservations();
-                      setState(() {
-                      });
                     }
                   },
                   child: Text(reservation == null
