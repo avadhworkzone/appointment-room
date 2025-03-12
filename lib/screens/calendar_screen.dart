@@ -100,7 +100,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
+            child:_eventsMap[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]==null|| _eventsMap[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]!.isEmpty?Center(child: Text('No reservation available for the day')):ListView.builder(
               itemCount: _eventsMap[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]?.length ?? 0,
               itemBuilder: (context, index) {
                 final reservation = _eventsMap[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)]![index];
@@ -149,9 +149,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
               ),
               Divider(thickness: 1, height: 16),
-              _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
-              _buildPriceRow("Prepayment", reservation.prepayment),
-              _buildPriceRow("Balance", reservation.balance, isBold: true, color: Colors.red),
+              // _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
+              // _buildPriceRow("Prepayment", reservation.prepayment),
+              _buildPriceRow("Pending Amount", reservation.balance, isBold: true, color: Colors.red),
             ],
           ),
         ),

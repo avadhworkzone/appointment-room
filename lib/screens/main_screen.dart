@@ -90,21 +90,21 @@ class _MainScreenState extends State<MainScreen> {
         clipBehavior: Clip.none,
         children: [
           Icon(icon, size: 28),
-          if (badgeCount > 0)
-            Positioned(
-              right: -2,
-              top: -2,
-              child: Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                constraints: BoxConstraints(minWidth: 18, minHeight: 18),
-                child: Text(
-                  badgeCount > 99 ? "99+" : badgeCount.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+          // if (badgeCount > 0)
+          //   Positioned(
+          //     right: -2,
+          //     top: -2,
+          //     child: Container(
+          //       padding: EdgeInsets.all(4),
+          //       decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+          //       constraints: BoxConstraints(minWidth: 18, minHeight: 18),
+          //       child: Text(
+          //         badgeCount > 99 ? "99+" : badgeCount.toString(),
+          //         style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          //         textAlign: TextAlign.center,
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
       label: label,

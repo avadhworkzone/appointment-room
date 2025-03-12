@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/reservation_model.dart';
-
+import 'package:get/get.dart';
 class ReservationDetailScreen extends StatelessWidget {
   final ReservationModel reservation;
 
@@ -15,9 +15,11 @@ class ReservationDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              reservation.fullname,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Center(
+              child: Text(
+                reservation.fullname,textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold,),
+              ),
             ),
             SizedBox(height: 10),
             _buildInfoRow(Icons.phone, "Phone: ${reservation.phone}"),
@@ -33,10 +35,33 @@ class ReservationDetailScreen extends StatelessWidget {
                 _buildGuestCount(Icons.pets, "Pets", reservation.pet),
               ],
             ),
+
             Divider(thickness: 1, height: 24),
+            _buildPriceRow("Rate per Night", reservation.ratePerNight),
+            _buildPriceRow("Subtotal", reservation.subtotal),
+            _buildPriceRow("Tax (5%)", reservation.tax),
+            _buildPriceRow("Discount", reservation.discount),
             _buildPriceRow("Grand Total", reservation.grandTotal, isBold: true),
             _buildPriceRow("Prepayment", reservation.prepayment),
-            _buildPriceRow("Balance", reservation.balance, isBold: true, color: Colors.red),
+            _buildPriceRow("Balance", reservation.balance,
+                isBold: true, color: Colors.red),
+SizedBox(height: 50,),
+          Center(
+            child: Container(
+            width: 200,
+              decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),border: Border.all(color: Colors.grey,width: 1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(child: InkWell(
+                  onTap: () {
+                    Get.back();
+                  },
+                  child: Text('Back',style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),)),),
+            ),
+            ),
+          )
           ],
         ),
       ),
@@ -50,7 +75,7 @@ class ReservationDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: Colors.grey),
           SizedBox(width: 8),
-          Text(text, style: TextStyle(fontSize: 16)),
+          Text(text, style: TextStyle(fontSize: 18)),
         ],
       ),
     );
@@ -59,9 +84,9 @@ class ReservationDetailScreen extends StatelessWidget {
   Widget _buildGuestCount(IconData icon, String label, int count) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey),
+        Icon(icon, size: 25, color: Colors.blue),
         SizedBox(width: 4),
-        Text("$label: $count", style: TextStyle(fontSize: 14)),
+        Text("$label: $count", style: TextStyle(fontSize: 18)),
       ],
     );
   }
@@ -72,10 +97,10 @@ class ReservationDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+          Text(label, style: TextStyle(fontSize: 18, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
           Text(
             "\$${amount.toStringAsFixed(2)}",
-            style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color),
+            style: TextStyle(fontSize: 18, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: color),
           ),
         ],
       ),
