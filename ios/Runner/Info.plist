@@ -28,6 +28,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library to save and share database files.</string>
+
+    <key>NSDocumentsDirectoryUsageDescription</key>
+    <string>We need access to the Documents directory to store your database file.</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

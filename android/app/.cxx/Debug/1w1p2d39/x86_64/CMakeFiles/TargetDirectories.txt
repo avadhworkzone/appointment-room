@@ -1,0 +1,2 @@
+/Users/avadhkatrodiya/Desktop/cal_room/android/app/.cxx/Debug/1w1p2d39/x86_64/CMakeFiles/edit_cache.dir
+/Users/avadhkatrodiya/Desktop/cal_room/android/app/.cxx/Debug/1w1p2d39/x86_64/CMakeFiles/rebuild_cache.dir

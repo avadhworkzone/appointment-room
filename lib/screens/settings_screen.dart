@@ -8,6 +8,7 @@ import '../controller/badge_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 
+import 'download_db.dart';
 import 'login_screen.dart';
 class SettingsScreen extends StatelessWidget {
   final isDarkMode = false.obs;
@@ -102,6 +103,14 @@ class SettingsScreen extends StatelessWidget {
                   leading: Icon(Icons.event, color: Colors.purple),
                   title: Text("Reset Reservations"),
                   onTap: () => resetDatabase(table: "Reservations"),
+                ),
+                ListTile(
+                  leading: Icon(Icons.insert_drive_file_outlined, color: Colors.blue),
+                  title: Text("download db"),
+                  onTap: () async{
+                    await DownloadDBFile.downloadDBFile();
+
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.logout, color: Colors.red),
