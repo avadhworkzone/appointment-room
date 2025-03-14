@@ -1,4 +1,6 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, prefer_const_constructors_in_immutables
+
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,14 +10,25 @@ import 'export_pdf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
-class UserScreen extends StatelessWidget {
-  final UserController userController = Get.find<UserController>(); // ✅ Use Get.find() to avoid multiple instances
+class UserScreen extends StatefulWidget {
 
+  UserScreen({super.key});
+  @override
+  State<UserScreen> createState() => _UserScreenState();
+}
+
+class _UserScreenState extends State<UserScreen> {
+  final UserController userController = Get.find<UserController>();
+ // ✅ Use Get.find() to avoid multiple instances
   final TextEditingController mobileController = TextEditingController();
-  final TextEditingController fullnameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
+  final TextEditingController fullnameController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  var isProcessing = false.obs;
+
+ // ✅ Prevent multiple clicks and database locks
   void showUserDialog({UserModel? user}) {
     if (user != null) {
       mobileController.text = user.mobileNumber;
@@ -103,7 +116,7 @@ class UserScreen extends StatelessWidget {
 
                       SharedPreferences prefs = await SharedPreferences.getInstance();
                       var userId = prefs.getString('userId') ?? "";
-                      print('user id ---> $userId');
+                      log('user id ---> $userId');
 
                       if (user == null) {
                         await userController.addUser(UserModel(

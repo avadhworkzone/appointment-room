@@ -1,24 +1,24 @@
-import 'package:cal_room/screens/login_screen.dart';
+// import 'package:cal_room/screens/login_screen.dart';
 import 'package:cal_room/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sqflite/sqflite.dart';
+// import 'package:sqflite/sqflite.dart';
 import 'controller/badge_controller.dart';
-import 'screens/user_screen.dart';
-import 'screens/room_screen.dart';
-import 'screens/reservation_screen.dart';
-import 'screens/calendar_screen.dart';
-import 'screens/settings_screen.dart';
+// import 'screens/user_screen.dart';
+// import 'screens/room_screen.dart';
+// import 'screens/reservation_screen.dart';
+// import 'screens/calendar_screen.dart';
+// import 'screens/settings_screen.dart';
 import 'controller/user_controller.dart';
 import 'controller/room_controller.dart';
 import 'controller/reservation_controller.dart';
-import 'database/db_helper.dart';
+// import 'database/db_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ Initialize the database before controllers
-  Database db = await DBHelper.database;
+  // Database db = await DBHelper.database;
 
   // ✅ Use Get.putAsync() to ensure database is ready before controllers
   await Get.putAsync(() async => UserController());
@@ -30,6 +30,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(

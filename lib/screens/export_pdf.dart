@@ -1,7 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:developer';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
+// import 'package:pdf/pdf.dart';
 import '../model/user_model.dart';
 import '../model/room_model.dart';
 import '../model/reservation_model.dart';
@@ -41,7 +44,7 @@ Future<void> exportReservationsAsPDF(List<ReservationModel> reservations) async 
   final file = File("${directory.path}/reservations_report.pdf");
   await file.writeAsBytes(await pdf.save());
 
-  print("PDF Saved at: ${file.path}");
+  log("PDF Saved at: ${file.path}");
 }
 
 // Export Users as PDF
@@ -72,7 +75,7 @@ Future<void> exportUsersAsPDF(List<UserModel> users) async {
   final file = File("${directory.path}/users_report.pdf");
   await file.writeAsBytes(await pdf.save());
 
-  print("PDF Saved at: ${file.path}");
+  log("PDF Saved at: ${file.path}");
 }
 
 // Export Rooms as PDF
@@ -103,5 +106,5 @@ Future<void> exportRoomsAsPDF(List<RoomModel> rooms) async {
   final file = File("${directory.path}/rooms_report.pdf");
   await file.writeAsBytes(await pdf.save());
 
-  print("PDF Saved at: ${file.path}");
+  log("PDF Saved at: ${file.path}");
 }

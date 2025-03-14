@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/room_controller.dart';
@@ -6,17 +8,29 @@ import '../model/room_model.dart';
 import 'export_pdf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class RoomScreen extends StatelessWidget {
+class RoomScreen extends StatefulWidget {
+
+  const RoomScreen({super.key});
+  @override
+  State<RoomScreen> createState() => _RoomScreenState();
+}
+
+class _RoomScreenState extends State<RoomScreen> {
   final RoomController roomController = Get.find<
-      RoomController>(); // ✅ Use Get.find() to avoid multiple instances
+      RoomController>();
+ // ✅ Use Get.find() to avoid multiple instances
   final UserController userController = Get.find<
-      UserController>(); // ✅ Use Get.find() to avoid multiple instances
-
+      UserController>();
+ // ✅ Use Get.find() to avoid multiple instances
   final TextEditingController roomNameController = TextEditingController();
-  final TextEditingController roomDescController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  var isProcessing = false.obs; // ✅ Prevent multiple clicks and database locks
 
+  final TextEditingController roomDescController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  var isProcessing = false.obs;
+
+ // ✅ Prevent multiple clicks and database locks
   void showRoomDialog({RoomModel? room}) {
     if (room != null) {
       roomNameController.text = room.roomName;
@@ -76,7 +90,7 @@ class RoomScreen extends StatelessWidget {
                               SharedPreferences prefs =
                                   await SharedPreferences.getInstance();
                               var userId = prefs.getString('userId') ?? "";
-                              print('user id ---> $userId');
+                              log('user id ---> $userId');
                               if (room == null) {
                                 await roomController.addRoom(RoomModel(
                                   roomName: roomNameController.text,
@@ -151,7 +165,7 @@ class RoomScreen extends StatelessWidget {
                           title: Text(room.roomName,
                               style: TextStyle(fontWeight: FontWeight.bold)),
                           // subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
-                          subtitle: Text("${room.roomDesc}"),
+                          subtitle: Text(room.roomDesc),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

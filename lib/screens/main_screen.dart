@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:cal_room/screens/reservation_screen.dart';
 import 'package:cal_room/screens/room_screen.dart';
 import 'package:cal_room/screens/settings_screen.dart';
@@ -8,6 +10,8 @@ import '../controller/badge_controller.dart';
 import 'calendar_screen.dart';
 import 'package:get/get.dart';
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }

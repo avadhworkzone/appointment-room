@@ -1,3 +1,7 @@
+// ignore_for_file: library_private_types_in_public_api
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:get/get.dart';
@@ -7,6 +11,8 @@ import '../model/reservation_model.dart';
 import 'reservation_detail_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
+  const CalendarScreen({super.key});
+
   @override
   _CalendarScreenState createState() => _CalendarScreenState();
 }
@@ -15,7 +21,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final ReservationController reservationController = Get.find();
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
-  Map<DateTime, List<ReservationModel>> _eventsMap = {};
+  final Map<DateTime, List<ReservationModel>> _eventsMap = {};
   late Worker _reservationListener; // To store the listener reference
 
   @override
@@ -46,7 +52,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         DateTime parsedDate = DateFormat("dd-MM-yyyy").parse(dateString);
         return DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
       } catch (e) {
-        print("Date parsing error: $e");
+        log("Date parsing error: $e");
         return DateTime.now();
       }
     }

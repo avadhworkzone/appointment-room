@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 import '../database/db_helper.dart';
 import '../model/reservation_model.dart';
@@ -21,17 +23,17 @@ class ReservationController extends GetxController {
       final reservations = await DBHelper.getReservations();
       reservationList.assignAll(reservations.map((e) => ReservationModel.fromMap(e)).toList());
     } catch (e) {
-      print("Error fetching reservations: $e");
+      log("Error fetching reservations: $e");
     } finally {
       isProcessing.value = false;
     }
   }
 
   /// ✅ **Check if User Exists Before Creating Reservation**
-  Future<bool> _doesUserExist(int userId) async {
-    final users = await DBHelper.getUsers();
-    return users.any((user) => user["id"] == userId);
-  }
+  // Future<bool> _doesUserExist(int userId) async {
+  //   final users = await DBHelper.getUsers();
+  //   return users.any((user) => user["id"] == userId);
+  // }
 
   /// ✅ **Add Reservation with Foreign Key Validation**
   Future<void> addReservation(ReservationModel reservation) async {
@@ -52,7 +54,7 @@ class ReservationController extends GetxController {
       });
       await fetchReservations(); // ✅ Refresh list after adding a reservation
     } catch (e) {
-      print("Error adding reservation: $e");
+      log("Error adding reservation: $e");
       Get.snackbar("Database Error", "Failed to add reservation.");
     } finally {
       isProcessing.value = false;
@@ -79,7 +81,7 @@ class ReservationController extends GetxController {
       });
       await fetchReservations(); // ✅ Refresh list after updating a reservation
     } catch (e) {
-      print("Error updating reservation: $e");
+      log("Error updating reservation: $e");
       Get.snackbar("Database Error", "Failed to update reservation.");
     } finally {
       isProcessing.value = false;
@@ -99,7 +101,7 @@ class ReservationController extends GetxController {
       });
       await fetchReservations(); // ✅ Refresh list after deleting a reservation
     } catch (e) {
-      print("Error deleting reservation: $e");
+      log("Error deleting reservation: $e");
       Get.snackbar("Database Error", "Failed to delete reservation.");
     } finally {
       isProcessing.value = false;

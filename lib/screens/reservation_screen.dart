@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/reservation_controller.dart';
@@ -5,6 +7,8 @@ import '../model/reservation_model.dart';
 import 'package:intl/intl.dart';
 
 class ReservationScreen extends StatefulWidget {
+  const ReservationScreen({super.key});
+
   @override
   State<ReservationScreen> createState() => _ReservationScreenState();
 }
@@ -40,7 +44,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
               itemBuilder: (context, index) {
                 final reservation =
                     reservationController.reservationList[index];
-                print("---reservation----$reservation");
+                log("---reservation----$reservation");
                 return _buildReservationCard(reservation);
               },
             )),
@@ -203,7 +207,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   /// ✅ Show Add/Edit Reservation Dialog
   Future<void> showReservationDialog({ReservationModel? reservation}) async {
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     TextEditingController checkinController = TextEditingController();
     TextEditingController checkoutController = TextEditingController();
@@ -214,8 +218,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
     TextEditingController discountController = TextEditingController();
     TextEditingController prepaymentController = TextEditingController();
 
-    DateTime? _checkinDate;
-    DateTime? _checkoutDate;
+    DateTime? checkinDate;
+    DateTime? checkoutDate;
 
     var adultCount = 1.obs;
     var childCount = 0.obs;
@@ -226,16 +230,16 @@ class _ReservationScreenState extends State<ReservationScreen> {
     var balance = 0.0.obs;
 
     /// ✅ **Pick a date and validate it**
-    Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
+    Future<void> selectDate(BuildContext context, bool isCheckIn) async {
       DateTime initialDate = isCheckIn
           ? DateTime.now() // Check-in starts today
-          : _checkinDate ??
+          : checkinDate ??
               DateTime.now()
                   .add(Duration(days: 1)); // Check-out starts after check-in
 
       DateTime firstDate = isCheckIn
           ? DateTime.now() // Check-in cannot be before today
-          : _checkinDate ?? DateTime.now(); // Check-out must be after check-in
+          : checkinDate ?? DateTime.now(); // Check-out must be after check-in
 
       DateTime? pickedDate = await showDatePicker(
         context: context,
@@ -246,24 +250,24 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       if (pickedDate != null) {
         if (isCheckIn) {
-          _checkinDate = pickedDate;
+          checkinDate = pickedDate;
           checkinController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
 
           // Auto-reset checkout if it's before the check-in
-          if (_checkoutDate != null && _checkoutDate!.isBefore(_checkinDate!)) {
-            _checkoutDate = _checkinDate!.add(Duration(days: 1));
+          if (checkoutDate != null && checkoutDate!.isBefore(checkinDate!)) {
+            checkoutDate = checkinDate!.add(Duration(days: 1));
             checkoutController.text =
-                DateFormat('yyyy-MM-dd').format(_checkoutDate!);
+                DateFormat('yyyy-MM-dd').format(checkoutDate!);
           }
         } else {
-          _checkoutDate = pickedDate;
+          checkoutDate = pickedDate;
           checkoutController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
         }
       }
     }
 
     /// ✅ **Calculates Tax, Grand Total & Balance**
-    void _calculateTotal() {
+    void calculateTotal() {
       double rate = double.tryParse(rateController.text) ?? 0.0;
       double discount = double.tryParse(discountController.text) ?? 0.0;
       double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
@@ -287,18 +291,18 @@ class _ReservationScreenState extends State<ReservationScreen> {
       adultCount.value = reservation.adult;
       childCount.value = reservation.child;
       petCount.value = reservation.pet;
-      _calculateTotal();
+      calculateTotal();
     } else {
       rateController.text = "100"; // Default rate
       discountController.text = "0";
       prepaymentController.text = "0";
-      _calculateTotal();
+      calculateTotal();
     }
 
     /// ✅ **Call `_calculateTotal()` whenever rate, discount, or prepayment changes**
-    rateController.addListener(_calculateTotal);
-    discountController.addListener(_calculateTotal);
-    prepaymentController.addListener(_calculateTotal);
+    rateController.addListener(calculateTotal);
+    discountController.addListener(calculateTotal);
+    prepaymentController.addListener(calculateTotal);
 
     Get.bottomSheet(
       Container(
@@ -309,7 +313,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         ),
         child: SingleChildScrollView(
           child: Form(
-            key: _formKey,
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -363,13 +367,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         child: _buildDateField(
                             "Check-in Date",
                             checkinController,
-                            () => _selectDate(Get.context!, true))),
+                            () => selectDate(Get.context!, true))),
                     SizedBox(width: 20),
                     Expanded(
                         child: _buildDateField(
                             "Check-out Date",
                             checkoutController,
-                            () => _selectDate(Get.context!, false))),
+                            () => selectDate(Get.context!, false))),
                   ],
                 ),
                 SizedBox(height: 20),
@@ -409,7 +413,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate() ) {
+                    if (formKey.currentState!.validate() ) {
                       ReservationModel newReservation = ReservationModel(
                         userId: 1,
                         // Replace with actual user ID logic

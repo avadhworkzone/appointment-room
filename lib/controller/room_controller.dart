@@ -24,10 +24,10 @@ class RoomController extends GetxController {
   }
 
   /// ✅ **Check if User Exists Before Creating Room**
-  Future<bool> _doesUserExist(int userId) async {
-    final users = await DBHelper.getUsers();
-    return users.any((user) => user["id"] == userId);
-  }
+  // Future<bool> _doesUserExist(int userId) async {
+  //   final users = await DBHelper.getUsers();
+  //   return users.any((user) => user["id"] == userId);
+  // }
 
   /// ✅ **Add Room with Foreign Key Validation**
   Future<void> addRoom(RoomModel room) async {

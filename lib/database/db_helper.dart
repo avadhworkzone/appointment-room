@@ -1,3 +1,7 @@
+// ignore_for_file: depend_on_referenced_packages
+
+import 'dart:developer';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -83,7 +87,7 @@ class DBHelper {
 
   static Future<List<Map<String, dynamic>>> getUsers() async {
     final db = await database;
-    print('db---->${db.query('Users')}');
+    log('db---->${db.query('Users')}');
     return await db.query('Users');
   }
 

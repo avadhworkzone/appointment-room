@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,7 +32,7 @@ class DownloadDBFile {
       // Check & Request Permissions
       bool hasPermission = await requestPermissions();
       if (!hasPermission) {
-        print("Storage permission denied!");
+        log("Storage permission denied!");
         return;
       }
 
@@ -58,9 +59,9 @@ class DownloadDBFile {
       String newFilePath = '${downloadsDir.path}/my_database.db';
       await dbFile.copy(newFilePath);
 
-      print("✅ Database file downloaded at: $newFilePath");
+      log("✅ Database file downloaded at: $newFilePath");
     } catch (e) {
-      print("❌ Error downloading database file: $e");
+      log("❌ Error downloading database file: $e");
     }
   }
 }

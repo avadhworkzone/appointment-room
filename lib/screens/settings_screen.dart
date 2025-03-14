@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/user_controller.dart';
@@ -6,7 +8,7 @@ import '../controller/reservation_controller.dart';
 import '../database/db_helper.dart';
 import '../controller/badge_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get/get.dart';
+// import 'package:get/get.dart';
 
 import 'download_db.dart';
 import 'login_screen.dart';

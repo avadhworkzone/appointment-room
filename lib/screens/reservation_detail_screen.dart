@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 class ReservationDetailScreen extends StatelessWidget {
   final ReservationModel reservation;
 
-  const ReservationDetailScreen({Key? key, required this.reservation}) : super(key: key);
+  const ReservationDetailScreen({super.key, required this.reservation});
 
   @override
   Widget build(BuildContext context) {
