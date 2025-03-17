@@ -19,8 +19,9 @@ class DBHelper {
     final path = join(await getDatabasesPath(), dbName);
     return await openDatabase(
       path,
-      version: 1,
+      version: 7,
       onCreate: _createDB,
+      onUpgrade: _upGradeDB,
       singleInstance: true, // ✅ Ensure only one instance of the DB is used
     );
   }
@@ -77,6 +78,15 @@ class DBHelper {
 );
 
     ''');
+  }
+  static Future<void> _upGradeDB(Database db,int oldVersion, int newVersion) async {
+    print("_upGradeDB=====> $oldVersion newVersion:=> $newVersion");
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE Reservations ADD COLUMN roomId INTEGER;");
+      db.execute("ALTER TABLE Reservations ADD COLUMN roomName TEXT;");
+    }
+    print("AFTER _upGradeDB=====> ");
+
   }
 
 

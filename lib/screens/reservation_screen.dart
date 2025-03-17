@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/model/room_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/reservation_controller.dart';
@@ -16,13 +18,15 @@ class ReservationScreen extends StatefulWidget {
 class _ReservationScreenState extends State<ReservationScreen> {
   final ReservationController reservationController =
       Get.find<ReservationController>();
+
   @override
   void initState() {
     initMethod();
+    RoomController.to.fetchRooms();
     super.initState();
   }
 
-  initMethod()async{
+  initMethod() async {
     await reservationController.fetchReservations();
   }
 
@@ -78,12 +82,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                           showReservationDialog(reservation: reservation),
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () async{
-                        await _deleteReservation(reservation.id!);
-                        await reservationController.fetchReservations();
-                      }
-                    ),
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () async {
+                          await _deleteReservation(reservation.id!);
+                          await reservationController.fetchReservations();
+                        }),
                   ],
                 ),
               ],
@@ -119,6 +122,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
             Divider(thickness: 1, height: 16),
 
             /// 🔹 **Pricing Details**
+            _buildPriceRow("Room",0,strValue: reservation.roomName),
             _buildPriceRow("Rate per Night", reservation.ratePerNight),
             _buildPriceRow("Subtotal", reservation.subtotal),
             _buildPriceRow("Tax (5%)", reservation.tax),
@@ -165,7 +169,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   /// ✅ **Builds Price Row (Rate, Subtotal, Tax, Grand Total, etc.)**
   Widget _buildPriceRow(String label, double value,
-      {bool isBold = false, Color color = Colors.black}) {
+      {bool isBold = false, Color color = Colors.black,String? strValue}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -178,7 +182,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
           Text(
-            "\$${value.toStringAsFixed(2)}",
+              strValue??"\$${value.toStringAsFixed(2)}",
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -190,7 +194,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
   /// ✅ **Delete Reservation with Confirmation**
-  Future<void> _deleteReservation(int reservationId) async{
+  Future<void> _deleteReservation(int reservationId) async {
     Get.defaultDialog(
       title: "Delete Reservation",
       middleText: "Are you sure you want to delete this reservation?",
@@ -217,9 +221,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
     TextEditingController rateController = TextEditingController();
     TextEditingController discountController = TextEditingController();
     TextEditingController prepaymentController = TextEditingController();
+    TextEditingController roomController = TextEditingController();
 
     DateTime? checkinDate;
     DateTime? checkoutDate;
+    RoomModel? selectedRoom;
 
     var adultCount = 1.obs;
     var childCount = 0.obs;
@@ -311,148 +317,222 @@ class _ReservationScreenState extends State<ReservationScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        child: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  reservation == null ? "Add Reservation" : "Edit Reservation",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                _buildTextField(
-                  fullnameController,
-                  "Full Name",
-                  keyboardType: TextInputType.text,
-                  validator: (value) =>
-                      value!.isEmpty ? "Enter full Name" : null,
-                ),
-                _buildTextField(
-                  phoneController,
-                  "Phone",
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if(value!.isEmpty){
-                      return "Enter mobile number";
-                    }
-                    else if (value.length < 10 ||value.length > 10){
-                      return "Phone number must be 10 digits";
-                    }
-                    return null;
-                  }
-                ),
-                _buildTextField(
-                  emailController,
-                  "Email",
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value!.isEmpty ? "Enter email" : null,
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: StatefulBuilder(
+          builder: (context, bottomSetState) {
+            return SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildCounter("Adults", adultCount),
-                    _buildCounter("Children", childCount),
-                    _buildCounter("Pets", petCount),
-                  ],
-                ),
-                SizedBox(height: 10),
-
-                /// ✅ **Check-in & Check-out Date Fields**
-                Row(
-                  children: [
-                    Expanded(
-                        child: _buildDateField(
-                            "Check-in Date",
-                            checkinController,
-                            () => selectDate(Get.context!, true))),
-                    SizedBox(width: 20),
-                    Expanded(
-                        child: _buildDateField(
-                            "Check-out Date",
-                            checkoutController,
-                            () => selectDate(Get.context!, false))),
-                  ],
-                ),
-                SizedBox(height: 20),
-
-                _buildTextField(
-                  rateController,
-                  "Rate Per Night",
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? "Enter rate per night" : null,
-                ),
-                _buildTextField(
-                  discountController,
-                  "Discount",
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? "Enter discount" : null,
-                ),
-                _buildTextField(
-                  prepaymentController,
-                  "Prepayment",
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? "Enter prepayment" : null,
-                ),
-                SizedBox(height: 10),
-                Obx(() => Column(
-                      children: [
-                        _buildSummaryRow("Subtotal", subtotal.value),
-                        _buildSummaryRow("Tax (5%)", tax.value),
-                        _buildSummaryRow("Grand Total", grandTotal.value,
-                            isBold: true),
-                        _buildSummaryRow("Balance", balance.value,
-                            isBold: true, color: Colors.red),
-                      ],
-                    )),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (formKey.currentState!.validate() ) {
-                      ReservationModel newReservation = ReservationModel(
-                        userId: 1,
-                        // Replace with actual user ID logic
-                        checkin: checkinController.text,
-                        checkout: checkoutController.text,
-                        fullname: fullnameController.text,
-                        phone: phoneController.text,
-                        email: emailController.text,
-                        adult: adultCount.value,
-                        child: childCount.value,
-                        pet: petCount.value,
-                        ratePerNight: double.parse(rateController.text),
-                        subtotal: subtotal.value,
-                        discount: double.parse(discountController.text),
-                        tax: tax.value,
-                        grandTotal: grandTotal.value,
-                        prepayment: double.parse(prepaymentController.text),
-                        balance: balance.value,
-                      );
-
-                      if (reservation == null) {
-                        await reservationController
-                            .addReservation(newReservation);
-                      } else {
-                        newReservation.id = reservation.id;
-                        await reservationController
-                            .updateReservation(newReservation);
+                    Text(
+                      reservation == null
+                          ? "Add Reservation"
+                          : "Edit Reservation",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: TextFormField(
+                        onTap: () {
+                          RoomModel? selectedDialogRoom = selectedRoom;
+                          Get.dialog(
+                            StatefulBuilder(
+                              builder: (context, dialogSetState) {
+                                return AlertDialog(
+                                  insetPadding: EdgeInsets.zero,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text("Room"),
+                                  content: SizedBox(
+                                    width: Get.width - 60,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: RoomController.to.roomList.value
+                                          .map((e) => ListTile(
+                                                onTap: () {
+                                                  dialogSetState(() {
+                                                    selectedDialogRoom = e;
+                                                  });
+                                                },
+                                                leading: Icon(selectedDialogRoom
+                                                            ?.id ==
+                                                        e.id
+                                                    ? Icons.radio_button_checked
+                                                    : Icons.radio_button_off),
+                                                title: Text(e.roomName),
+                                              ))
+                                          .toList(),
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                        child: Text('CANCEL')),
+                                    TextButton(
+                                        onPressed: () {
+                                          if (selectedDialogRoom != null) {
+                                            bottomSetState(() {
+                                              selectedRoom = selectedDialogRoom;
+                                              roomController.text =
+                                                  selectedDialogRoom
+                                                          ?.roomName ??
+                                                      "";
+                                              Get.back();
+                                            });
+                                          }
+                                        },
+                                        child: Text('OK')),
+                                  ],
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        readOnly: true,
+                        controller: roomController,
+                        decoration: InputDecoration(
+                            suffixIcon: Icon(Icons.arrow_drop_down),
+                            labelText: "Room",
+                            border: OutlineInputBorder()),
+                        validator: (value) =>
+                            value!.isEmpty ? "Select room" : null,
+                      ),
+                    ),
+                    _buildTextField(
+                      fullnameController,
+                      "Full Name",
+                      keyboardType: TextInputType.text,
+                      validator: (value) =>
+                          value!.isEmpty ? "Enter full Name" : null,
+                    ),
+                    _buildTextField(phoneController, "Phone",
+                        keyboardType: TextInputType.phone, validator: (value) {
+                      if (value!.isEmpty) {
+                        return "Enter mobile number";
+                      } else if (value.length < 10 || value.length > 10) {
+                        return "Phone number must be 10 digits";
                       }
-                      Get.back();
-                      await reservationController.fetchReservations();
-                    }
-                  },
-                  child: Text(reservation == null
-                      ? "Add Reservation"
-                      : "Update Reservation"),
+                      return null;
+                    }),
+                    _buildTextField(
+                      emailController,
+                      "Email",
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) =>
+                          value!.isEmpty ? "Enter email" : null,
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildCounter("Adults", adultCount),
+                        _buildCounter("Children", childCount),
+                        _buildCounter("Pets", petCount),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+
+                    /// ✅ **Check-in & Check-out Date Fields**
+                    Row(
+                      children: [
+                        Expanded(
+                            child: _buildDateField(
+                                "Check-in Date",
+                                checkinController,
+                                () => selectDate(Get.context!, true))),
+                        SizedBox(width: 20),
+                        Expanded(
+                            child: _buildDateField(
+                                "Check-out Date",
+                                checkoutController,
+                                () => selectDate(Get.context!, false))),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    _buildTextField(
+                      rateController,
+                      "Rate Per Night",
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value!.isEmpty ? "Enter rate per night" : null,
+                    ),
+                    _buildTextField(
+                      discountController,
+                      "Discount",
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value!.isEmpty ? "Enter discount" : null,
+                    ),
+                    _buildTextField(
+                      prepaymentController,
+                      "Prepayment",
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value!.isEmpty ? "Enter prepayment" : null,
+                    ),
+                    SizedBox(height: 10),
+                    Obx(() => Column(
+                          children: [
+                            _buildSummaryRow("Subtotal", subtotal.value),
+                            _buildSummaryRow("Tax (5%)", tax.value),
+                            _buildSummaryRow("Grand Total", grandTotal.value,
+                                isBold: true),
+                            _buildSummaryRow("Balance", balance.value,
+                                isBold: true, color: Colors.red),
+                          ],
+                        )),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          ReservationModel newReservation = ReservationModel(
+                            userId: 1,
+                            // Replace with actual user ID logic
+                            checkin: checkinController.text,
+                            checkout: checkoutController.text,
+                            fullname: fullnameController.text,
+                            phone: phoneController.text,
+                            email: emailController.text,
+                            adult: adultCount.value,
+                            child: childCount.value,
+                            pet: petCount.value,
+                            ratePerNight: double.parse(rateController.text),
+                            subtotal: subtotal.value,
+                            discount: double.parse(discountController.text),
+                            tax: tax.value,
+                            grandTotal: grandTotal.value,
+                            prepayment: double.parse(prepaymentController.text),
+                            balance: balance.value,
+                            roomId: selectedRoom?.id??0,
+                            roomName: selectedRoom?.roomName??"",
+                          );
+
+                          if (reservation == null) {
+                            await reservationController
+                                .addReservation(newReservation);
+                          } else {
+                            newReservation.id = reservation.id;
+                            await reservationController
+                                .updateReservation(newReservation);
+                          }
+                          Get.back();
+                          await reservationController.fetchReservations();
+                        }
+                      },
+                      child: Text(reservation == null
+                          ? "Add Reservation"
+                          : "Update Reservation"),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
       isScrollControlled: true,

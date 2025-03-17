@@ -3,6 +3,7 @@ import '../database/db_helper.dart';
 import '../model/room_model.dart';
 
 class RoomController extends GetxController {
+  static RoomController to = Get.find<RoomController>();
   var roomList = <RoomModel>[].obs;
   var isProcessing = false.obs; // ✅ Prevent multiple operations at once
 

@@ -67,8 +67,8 @@ class _RoomScreenState extends State<RoomScreen> {
               SizedBox(height: 10),
               TextFormField(
                   controller: roomDescController,
-                  validator: (value) =>
-                  value!.isEmpty ? "Enter room description" : null,
+                  // validator: (value) =>
+                  // value!.isEmpty ? "Enter room description" : null,
                   decoration: InputDecoration(
                     labelText: "Room Description",
                     border: OutlineInputBorder(),

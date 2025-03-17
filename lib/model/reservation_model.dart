@@ -16,6 +16,8 @@ class ReservationModel {
   double grandTotal;
   double prepayment;
   double balance;
+  int roomId;
+  String roomName;
 
   ReservationModel({
     this.id,
@@ -35,6 +37,8 @@ class ReservationModel {
     required this.grandTotal,
     required this.prepayment,
     required this.balance,
+    required this.roomId,
+    required this.roomName,
   });
 
   // Convert a ReservationModel to a Map
@@ -57,6 +61,8 @@ class ReservationModel {
       'grandtotal': grandTotal,
       'prepayment': prepayment,
       'balance': balance,
+      'roomId': roomId,
+      'roomName': roomName,
     };
   }
 
@@ -80,6 +86,8 @@ class ReservationModel {
       grandTotal: map['grandtotal'],
       prepayment: map['prepayment'],
       balance: map['balance'],
+      roomId: map['roomId']??0,
+      roomName: map['roomName']??"",
     );
   }
 }
