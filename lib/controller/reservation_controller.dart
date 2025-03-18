@@ -5,6 +5,7 @@ import '../database/db_helper.dart';
 import '../model/reservation_model.dart';
 
 class ReservationController extends GetxController {
+  static ReservationController to =Get.find<ReservationController>();
   var reservationList = <ReservationModel>[].obs;
   var isProcessing = false.obs; // ✅ Prevents multiple simultaneous operations
 

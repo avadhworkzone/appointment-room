@@ -122,7 +122,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
             Divider(thickness: 1, height: 16),
 
             /// 🔹 **Pricing Details**
-            _buildPriceRow("Room",0,strValue: reservation.roomName),
+            _buildPriceRow("Room", 0, strValue: reservation.roomName),
             _buildPriceRow("Rate per Night", reservation.ratePerNight),
             _buildPriceRow("Subtotal", reservation.subtotal),
             _buildPriceRow("Tax (5%)", reservation.tax),
@@ -169,7 +169,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   /// ✅ **Builds Price Row (Rate, Subtotal, Tax, Grand Total, etc.)**
   Widget _buildPriceRow(String label, double value,
-      {bool isBold = false, Color color = Colors.black,String? strValue}) {
+      {bool isBold = false, Color color = Colors.black, String? strValue}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -182,7 +182,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
           ),
           Text(
-              strValue??"\$${value.toStringAsFixed(2)}",
+            strValue ?? "\$${value.toStringAsFixed(2)}",
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -325,12 +325,24 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      reservation == null
-                          ? "Add Reservation"
-                          : "Edit Reservation",
-                      style:
+                    Row(
+                      children: [
+                        InkWell(
+                            onTap:() {
+                              Get.back();
+                            } ,
+                            child: Icon(Icons.arrow_back_outlined,color: Colors.black,)),
+                        Spacer(),
+                        Text(
+                          reservation == null
+                              ? "Add Reservation"
+                              : "Edit Reservation",
+                          style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Spacer(),
+
+                      ],
                     ),
                     SizedBox(height: 20),
                     Padding(
@@ -490,6 +502,32 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
+                          final checkIn =
+                              DateTime.parse(checkinController.text);
+                          final checkOut =
+                              DateTime.parse(checkoutController.text);
+                          final isContain = ReservationController
+                              .to.reservationList.value
+                              .any(
+                            (element) =>
+                                ((checkIn.isAfter(
+                                            DateTime.parse(element.checkin)) &&
+                                        checkIn.isBefore(DateTime.parse(
+                                            element.checkout))) ||
+                                    (checkOut.isAfter(
+                                            DateTime.parse(element.checkin)) &&
+                                        checkOut.isBefore(DateTime.parse(
+                                            element.checkout)))) &&
+                                element.roomId == selectedRoom?.id,
+                          );
+
+                          if (isContain) {
+                            Get.snackbar("Alert",
+                                "Check-in or Check-out date already exist.",
+                                backgroundColor: Colors.blue,
+                            );
+                            return;
+                          }
                           ReservationModel newReservation = ReservationModel(
                             userId: 1,
                             // Replace with actual user ID logic
@@ -508,8 +546,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
                             grandTotal: grandTotal.value,
                             prepayment: double.parse(prepaymentController.text),
                             balance: balance.value,
-                            roomId: selectedRoom?.id??0,
-                            roomName: selectedRoom?.roomName??"",
+                            roomId: selectedRoom?.id ?? 0,
+                            roomName: selectedRoom?.roomName ?? "",
                           );
 
                           if (reservation == null) {
