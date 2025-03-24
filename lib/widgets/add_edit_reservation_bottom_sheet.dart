@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
@@ -78,7 +80,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
       childCount.value = reservation!.child;
       petCount.value = reservation!.pet;
       selectedRoom = RoomModel(
-          roomName: reservation!.roomName ?? "",
+          roomName: reservation!.roomName ,
           roomDesc: "",
           userId: 0,
           id: reservation!.roomId);

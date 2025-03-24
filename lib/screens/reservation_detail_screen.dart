@@ -1,17 +1,11 @@
-import 'dart:convert';
-import 'dart:developer';
+// ignore_for_file: must_be_immutable
 
-import 'package:cal_room/screens/calendar_screen.dart';
-import 'package:cal_room/screens/main_screen.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../controller/reservation_controller.dart';
-import '../controller/room_controller.dart';
 import '../model/reservation_model.dart';
 import 'package:get/get.dart';
 
-import '../model/room_model.dart';
 
 class ReservationDetailScreen extends StatefulWidget {
    ReservationModel reservation;
@@ -111,7 +105,6 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                       onTap: () async {
                       final result=await addEditReservationBottomSheet(
                             reservation: widget.reservation);
-                      print("result:==> $result");
                       if(result!=null){
                         setState(() {
                           widget.reservation=result;

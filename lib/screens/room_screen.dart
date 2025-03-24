@@ -1,12 +1,10 @@
-import 'dart:developer';
 
+import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/room_controller.dart';
 import '../controller/user_controller.dart';
-import '../model/room_model.dart';
 import 'export_pdf.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RoomScreen extends StatefulWidget {
 
@@ -21,106 +19,7 @@ class _RoomScreenState extends State<RoomScreen> {
  // ✅ Use Get.find() to avoid multiple instances
   final UserController userController = Get.find<
       UserController>();
- // ✅ Use Get.find() to avoid multiple instances
-  final TextEditingController roomNameController = TextEditingController();
-
-  final TextEditingController roomDescController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
-
   var isProcessing = false.obs;
-
- // ✅ Prevent multiple clicks and database locks
-  void showRoomDialog({RoomModel? room}) {
-    if (room != null) {
-      roomNameController.text = room.roomName;
-      roomDescController.text = room.roomDesc;
-    } else {
-      roomNameController.clear();
-      roomDescController.clear();
-    }
-
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(room == null ? "Add Room" : "Edit Room",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
-              TextFormField(
-                controller: roomNameController,
-                validator: (value) =>
-                value!.isEmpty ? "Enter room name" : null,
-                decoration: InputDecoration(
-                  labelText: "Room Name",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                  controller: roomDescController,
-                  // validator: (value) =>
-                  // value!.isEmpty ? "Enter room description" : null,
-                  decoration: InputDecoration(
-                    labelText: "Room Description",
-                    border: OutlineInputBorder(),
-                  )),
-              SizedBox(height: 20),
-              Obx(() => ElevatedButton(
-                    onPressed: isProcessing.value
-                        ? null
-                        : () async {
-                            if (_formKey.currentState!.validate()) {
-                              if (roomNameController.text.isEmpty) {
-                                Get.snackbar("Error", "Room Name is required");
-                                return;
-                              }
-
-                              isProcessing.value =
-                                  true; // ✅ Prevent multiple clicks
-                              // await Future.delayed(Duration(milliseconds: 300)); // ✅ Ensure previous writes finish
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
-                              var userId = prefs.getString('userId') ?? "";
-                              log('user id ---> $userId');
-                              if (room == null) {
-                                await roomController.addRoom(RoomModel(
-                                  roomName: roomNameController.text,
-                                  roomDesc: roomDescController.text,
-                                  userId: int.parse(userId),
-                                ));
-                              } else {
-                                await roomController.updateRoom(RoomModel(
-                                  id: room.id,
-                                  roomName: roomNameController.text,
-                                  roomDesc: roomDescController.text,
-                                  userId: int.parse(userId),
-                                ));
-                              }
-
-                              await roomController
-                                  .fetchRooms(); // ✅ Update list immediately
-                              isProcessing.value = false;
-                              Get.back();
-                            }
-                          },
-                    child: Text(room == null ? "Add Room" : "Update Room"),
-                  )),
-            ],
-          ),
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
 
   void confirmDelete(int id) {
     Get.defaultDialog(
@@ -145,7 +44,7 @@ class _RoomScreenState extends State<RoomScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("Rooms")),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showRoomDialog(),
+        onPressed: () => addEditRoomBottomSheet(),
         child: Icon(Icons.add),
       ),
       body: Obx(() => roomController.roomList.isEmpty
@@ -171,7 +70,7 @@ class _RoomScreenState extends State<RoomScreen> {
                             children: [
                               IconButton(
                                   icon: Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () => showRoomDialog(room: room)),
+                                  onPressed: () => addEditRoomBottomSheet(room: room)),
                               IconButton(
                                   icon: Icon(Icons.delete, color: Colors.red),
                                   onPressed: () => confirmDelete(room.id!)),

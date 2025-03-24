@@ -1,8 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:cal_room/screens/reservation_screen.dart';
-import 'package:cal_room/screens/room_screen.dart';
 import 'package:cal_room/screens/settings_screen.dart';
+import 'package:cal_room/screens/today_screen.dart';
 import 'package:cal_room/screens/user_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +20,8 @@ class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
   final screens = [
     CalendarScreen(),
-    RoomScreen(),
+    TodayScreen(),
+    // RoomScreen(),
     ReservationScreen(),
     UserScreen(),
     SettingsScreen(),
@@ -78,7 +79,8 @@ class _MainScreenState extends State<MainScreen> {
         },
         destinations: [
           _buildNavItem(Icons.calendar_today, "Calendar", badgeController.calendarBadge.value),
-          _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
+          // _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
+          _buildNavItem(Icons.meeting_room, "Today", badgeController.roomsBadge.value),
           _buildNavItem(Icons.event, "Reservations", badgeController.reservationsBadge.value),
           _buildNavItem(Icons.person, "Users", badgeController.usersBadge.value),
           _buildNavItem(Icons.settings, "Settings", badgeController.settingsBadge.value),
