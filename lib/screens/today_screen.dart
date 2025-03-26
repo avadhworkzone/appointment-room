@@ -64,13 +64,16 @@
 //     );
 //   }
 // }
-import 'dart:developer';
 
 import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/screens/reservation_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/reservation_controller.dart';
 import 'package:intl/intl.dart';
+
+import '../model/reservation_model.dart';
+import '../widgets/choose_add_calendar_bottom_sheet.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -79,11 +82,20 @@ class TodayScreen extends StatefulWidget {
   State<TodayScreen> createState() => _TodayScreenState();
 }
 
-class _TodayScreenState extends State<TodayScreen> {
-  final ReservationController reservationController = Get.find<ReservationController>();
+class _TodayScreenState extends State<TodayScreen>
+    with SingleTickerProviderStateMixin {
+  final ReservationController reservationController =
+      Get.find<ReservationController>();
+  final tabLabels = [
+    "Check-In",
+    "Check-Out",
+  ];
+  late TabController _tabController;
 
   @override
   void initState() {
+    _tabController = TabController(length: 2, vsync: this);
+
     initMethod();
     RoomController.to.fetchRooms();
     super.initState();
@@ -96,50 +108,107 @@ class _TodayScreenState extends State<TodayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Today's Reservations")),
+      appBar: AppBar(
+        title: const Text("Today's Reservations"),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          labelStyle: TextStyle(fontWeight: FontWeight.bold),
+          // Selected tab bold
+          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
+          // Unselected tab normal
+          tabs: tabLabels.map((label) => Tab(text: label)).toList(),
+          onTap: (value) {
+            setState(() {});
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => chooseAddCalendarBottomSheet(),
+        child: Icon(Icons.add),
+      ),
       body: Obx(() {
         if (reservationController.reservationList.isEmpty) {
-          return const Center(child: Text("No reservations found. Add a new reservation!"));
+          return const Center(
+              child: Text("No reservations found. Add a new reservation!"));
         }
 
-        final now = DateTime.now();
-        final reservationList = reservationController.reservationList.where(
-              (ele) {
+        final now = DateFormat("yyyy-MM-dd").parse(DateTime.now().toString());
+
+        final checkInReservationList =
+            reservationController.reservationList.where(
+          (ele) {
             final checkin = DateTime.parse(ele.checkin);
-            final checkout = DateTime.parse(ele.checkout);
-            return now.isAtSameMomentAs(checkin) ||
-                now.isAtSameMomentAs(checkout) ||
-                (now.isAfter(checkin) && now.isBefore(checkout));
+            return now.isAtSameMomentAs(checkin);
           },
         ).toList();
 
-        if (reservationList.isEmpty) {
-          return const Center(child: Text("No reservations for today."));
-        }
+        final checkOutReservationList =
+            reservationController.reservationList.where(
+          (ele) {
+            final checkout = DateTime.parse(ele.checkout);
+            return now.isAtSameMomentAs(checkout);
+          },
+        ).toList();
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            headingRowColor: MaterialStateProperty.all(Colors.grey.shade200),
-            columns: const [
-              DataColumn(label: Text('Guest Name')),
-              DataColumn(label: Text('Room')),
-              DataColumn(label: Text('Check-in')),
-              DataColumn(label: Text('Check-out')),
-              DataColumn(label: Text('pending Price')),
-            ],
-            rows: reservationList.map((reservation) {
-              return DataRow(cells: [
-                DataCell(Text(reservation.fullname ?? 'N/A')),
-                DataCell(Text(reservation.roomName ?? 'N/A')),
-                DataCell(Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(reservation.checkin)))),
-                DataCell(Text(DateFormat('yyyy-MM-dd').format(DateTime.parse(reservation.checkout)))),
-                DataCell(Text('${reservation.balance ?? 0}')),
-              ]);
-            }).toList(),
-          ),
-        );
+        return TabBarView(
+            physics: NeverScrollableScrollPhysics(),
+            controller: _tabController,
+            children: [
+              checkInReservationList.isEmpty
+                  ? Center(child: Text("No check-in reservations for today."))
+                  : ReservationList(
+                      reservationList: checkInReservationList,
+                    ),
+              checkOutReservationList.isEmpty
+                  ? Center(child: Text("No check-out reservations for today."))
+                  : ReservationList(
+                      reservationList: checkOutReservationList,
+                    ),
+            ]);
       }),
+    );
+  }
+}
+
+class ReservationList extends StatelessWidget {
+  const ReservationList({super.key, required this.reservationList});
+
+  final List<ReservationModel> reservationList;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
+        showCheckboxColumn: false, // 👈 removes the checkbox
+
+        columns: const [
+          DataColumn(label: Text('Guest Name')),
+          DataColumn(label: Text('Room')),
+          DataColumn(label: Text('Check-in')),
+          DataColumn(label: Text('Check-out')),
+          DataColumn(label: Text('pending Price')),
+        ],
+        rows: reservationList.map((reservation) {
+          return DataRow(
+              onSelectChanged: (value) {
+                Get.to(() => ReservationDetailScreen(reservation: reservation));
+              },
+              cells: [
+                DataCell(Text(reservation.fullname)),
+                DataCell(Text(reservation.roomName)),
+                DataCell(Text(DateFormat('yyyy-MM-dd')
+                    .format(DateTime.parse(reservation.checkin)))),
+                DataCell(Text(DateFormat('yyyy-MM-dd')
+                    .format(DateTime.parse(reservation.checkout)))),
+                DataCell(Text('${reservation.balance}')),
+              ]);
+        }).toList(),
+      ),
     );
   }
 }

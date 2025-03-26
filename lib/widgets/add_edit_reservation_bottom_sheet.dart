@@ -31,6 +31,7 @@ class AddEditReservationWidget extends StatefulWidget {
 
 class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
   final formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   final ReservationController reservationController =
       Get.find<ReservationController>();
@@ -339,7 +340,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       )),
                   SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () async {
+                    onPressed: isLoading?null:() async {
                       if (formKey.currentState!.validate()) {
                         final checkIn = DateTime.parse(checkinController.text);
                         final checkOut =
@@ -410,7 +411,6 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                               element.roomId == selectedRoom?.id &&
                               reservation?.id != element.id);
                         });
-                        print("isContain:==> $isContain");
                         if (isContain) {
                           Get.snackbar(
                             "Attention",
@@ -419,6 +419,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           );
                           return;
                         }
+                        setState(() => isLoading = true);
+
                         ReservationModel newReservation = ReservationModel(
                           userId: 1,
                           // Replace with actual user ID logic
@@ -449,11 +451,22 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           await reservationController
                               .updateReservation(newReservation);
                         }
+                        setState(() => isLoading = false);
+
                         Get.back(result: newReservation);
                         await reservationController.fetchReservations();
                       }
                     },
-                    child: Text(reservation == null
+                    child: isLoading
+                        ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                        :Text(reservation == null
                         ? "Add Reservation"
                         : "Update Reservation"),
                   ),

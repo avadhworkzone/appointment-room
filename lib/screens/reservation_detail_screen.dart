@@ -113,6 +113,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
+                          color: Colors.blue,
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(color: Colors.grey, width: 1),
                         ),
@@ -122,7 +123,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                             child: Text(
                               'Edit',
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
                             ),
                           ),
                         ),
