@@ -80,7 +80,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
       childCount.value = reservation!.child;
       petCount.value = reservation!.pet;
       selectedRoom = RoomModel(
-          roomName: reservation!.roomName ,
+          roomName: reservation!.roomName,
           roomDesc: "",
           userId: 0,
           id: reservation!.roomId);
@@ -108,6 +108,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
 
     DateTime firstDate = isCheckIn
         ? DateTime.now() // Check-in cannot be before today
+        // ? DateTime(1999) // Check-in cannot be before today
         : checkinDate ?? DateTime.now(); // Check-out must be after check-in
 
     DateTime? pickedDate = await showDatePicker(
@@ -343,7 +344,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                         final checkIn = DateTime.parse(checkinController.text);
                         final checkOut =
                             DateTime.parse(checkoutController.text);
-                        if(checkIn.isAtSameMomentAs(checkOut)){
+                        if (checkIn.isAtSameMomentAs(checkOut)) {
                           Get.snackbar(
                             "Attention",
                             "The date of Check-in must be less than the date of Check-out!",
@@ -351,29 +352,65 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           );
                           return;
                         }
-                        final isContain =
-                            ReservationController.to.reservationList.value.any(
-                          (element) =>
-                              ((checkIn.isAtSameMomentAs(
-                                          DateTime.parse(element.checkin)) ||
-                                      checkIn.isAtSameMomentAs(
-                                          DateTime.parse(element.checkout)) ||
+                        final isContain = ReservationController
+                            .to.reservationList.value
+                            .any((element) {
+                       /*   print(
+                              'ID :=>${element.roomId} SEL :=> ${selectedRoom?.id} CHE IN :=> ${element.checkin} CHE OU :=> ${element.checkout}');
+                          if (((checkIn.isAfter(DateTime.parse(element.checkin)) || checkIn.isAtSameMomentAs(DateTime.parse(element.checkin))) &&
+                                  (checkOut.isBefore(DateTime.parse(element.checkout)) ||
                                       checkOut.isAtSameMomentAs(
-                                          DateTime.parse(element.checkin)) ||
-                                      checkOut.isAtSameMomentAs(
-                                          DateTime.parse(element.checkout))) ||
-                                  (checkIn.isAfter(
-                                          DateTime.parse(element.checkin)) &&
-                                      checkIn.isBefore(
-                                          DateTime.parse(element.checkout))) ||
-                                  (checkOut.isAfter(
-                                          DateTime.parse(element.checkin)) &&
-                                      checkOut.isBefore(
                                           DateTime.parse(element.checkout)))) &&
                               element.roomId == selectedRoom?.id &&
-                              reservation?.id != element.id,
-                        );
-
+                              reservation?.id != element.id) {
+                            print(
+                                "FIRST -------> ${element.checkin} O :=>${element.checkout}");
+                          } else if ((checkOut.isAfter(DateTime.parse(element.checkin)) &&
+                                  (checkOut.isBefore(DateTime.parse(element.checkout)) ||
+                                      checkOut.isAtSameMomentAs(
+                                          DateTime.parse(element.checkout)))) &&
+                              element.roomId == selectedRoom?.id &&
+                              reservation?.id != element.id) {
+                            print(
+                                "SECOND -------> ${element.checkin} O :=>${element.checkout}");
+                          } else if (((checkIn.isAfter(DateTime.parse(element.checkin)) ||
+                                      checkIn.isAtSameMomentAs(
+                                          DateTime.parse(element.checkin))) &&
+                                  checkIn.isBefore(
+                                      DateTime.parse(element.checkout))) &&
+                              element.roomId == selectedRoom?.id &&
+                              reservation?.id != element.id) {
+                            print(
+                                "3 -------> ${element.checkin} O :=>${element.checkout}");
+                          } else if ((DateTime.parse(element.checkin).isAfter(checkIn) &&
+                                  DateTime.parse(element.checkout).isBefore(checkOut)) &&
+                              element.roomId == selectedRoom?.id &&
+                              reservation?.id != element.id) {
+                            print(
+                                "4 -------> ${element.checkin} O :=>${element.checkout}");
+                          }*/
+                          return ((((checkIn.isAfter(DateTime.parse(element.checkin)) || checkIn.isAtSameMomentAs(DateTime.parse(element.checkin))) &&
+                                      (checkOut.isBefore(DateTime.parse(element.checkout)) ||
+                                          checkOut.isAtSameMomentAs(DateTime.parse(
+                                              element.checkout)))) ||
+                                  (checkOut.isAfter(DateTime.parse(element.checkin)) &&
+                                      (checkOut.isBefore(DateTime.parse(element.checkout)) ||
+                                          checkOut.isAtSameMomentAs(
+                                              DateTime.parse(
+                                                  element.checkout)))) ||
+                                  ((checkIn.isAfter(DateTime.parse(element.checkin)) ||
+                                      checkIn.isAtSameMomentAs(
+                                          DateTime.parse(element.checkin))) &&
+                                      checkIn.isBefore(
+                                          DateTime.parse(element.checkout))) ||
+                                  (DateTime.parse(element.checkin)
+                                          .isAfter(checkIn) &&
+                                      DateTime.parse(element.checkout)
+                                          .isBefore(checkOut))) &&
+                              element.roomId == selectedRoom?.id &&
+                              reservation?.id != element.id);
+                        });
+                        print("isContain:==> $isContain");
                         if (isContain) {
                           Get.snackbar(
                             "Attention",
