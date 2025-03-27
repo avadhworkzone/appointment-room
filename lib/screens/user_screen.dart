@@ -2,6 +2,7 @@
 
 import 'dart:developer';
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/user_controller.dart';
@@ -52,7 +53,8 @@ class _UserScreenState extends State<UserScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  user == null ? "Add User" : "Edit User",
+                  user == null ?  StringUtils.addUser
+                  : StringUtils.editUser,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 10),
@@ -61,9 +63,9 @@ class _UserScreenState extends State<UserScreen> {
                 TextFormField(
                   controller: fullnameController,
                   validator: (value) =>
-                  value!.isEmpty ? "Enter name" : null,
+                  value!.isEmpty ? StringUtils.enterName : null,
                   decoration: InputDecoration(
-                    labelText: "Full Name",
+                    labelText: StringUtils.fullName,
                     border: OutlineInputBorder(), // ✅ Outline Border
                     prefixIcon: Icon(Icons.person), // ✅ Icon for better UI
                   ),
@@ -76,15 +78,15 @@ class _UserScreenState extends State<UserScreen> {
                   controller: mobileController,
                   validator: (value) {
                       if(value!.isEmpty){
-                        return "Enter mobile number";
+                        return StringUtils.enterMobileNumber;
                       }
                      else if(value.length < 10 ||value.length > 10){
-                      return "Phone number must be 10 digits";
+                      return StringUtils.invalidPhoneNumber;
                     }
                     return null;
                   },
                   decoration: InputDecoration(
-                    labelText: "Mobile Number",
+                    labelText: StringUtils.mobileNumber,
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.phone),
                   ),
@@ -103,11 +105,11 @@ class _UserScreenState extends State<UserScreen> {
                       RegExp regExp = RegExp(mobilePattern);
 
                       if (fullnameController.text.trim().isEmpty) {
-                        Get.snackbar("Error", "Full Name is required");
+                        Get.snackbar(StringUtils.error, StringUtils.fullNameValidation);
                         return;
                       }
                       if (!regExp.hasMatch(mobileController.text.trim())) {
-                        Get.snackbar("Error", "Enter a valid 10-digit mobile number");
+                        Get.snackbar(StringUtils.error, StringUtils.validPhoneWarning);
                         return;
                       }
 
@@ -139,7 +141,8 @@ class _UserScreenState extends State<UserScreen> {
                     }
 
                   },
-                  child: Text(user == null ? "Add User" : "Update User"),
+                  child: Text(user == null ?  StringUtils.addUser
+                      : StringUtils.updateUser),
                 )),
               ],
             ),
@@ -152,10 +155,10 @@ class _UserScreenState extends State<UserScreen> {
 
   void confirmDelete(int id) {
     Get.defaultDialog(
-      title: "Delete User",
-      middleText: "Are you sure you want to delete this user?",
-      textConfirm: "Delete",
-      textCancel: "Cancel",
+      title: StringUtils.deleteUserTitle,
+      middleText: StringUtils.deleteUserMessage,
+      textConfirm: StringUtils.delete,
+      textCancel: StringUtils.cancel,
       confirmTextColor: Colors.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
@@ -171,13 +174,13 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Users")),
+      appBar: AppBar(title: Text(StringUtils.users)),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showUserDialog(),
         child: Icon(Icons.add),
       ),
       body: Obx(() => userController.userList.isEmpty
-          ? Center(child: Text("No users found. Add a new user!"))
+          ? Center(child: Text(StringUtils.noUsersFound))
           : Column(
         children: [
           Expanded(
@@ -190,7 +193,7 @@ class _UserScreenState extends State<UserScreen> {
                   margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                   child: ListTile(
                     title: Text(user.fullname, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("Mobile Number: ${user.mobileNumber}"),
+                    subtitle: Text("${StringUtils.mobileNumber}: ${user.mobileNumber}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -208,9 +211,10 @@ class _UserScreenState extends State<UserScreen> {
             child: ElevatedButton(
               onPressed: () {
                 exportUsersAsPDF(userController.userList);
-                Get.snackbar("Export Successful", "PDF saved in documents folder!");
+                Get.snackbar(StringUtils.exportSuccessTitle,
+                    StringUtils.exportSuccessMessage);
               },
-              child: Text("Export Users as PDF"),
+              child: Text(StringUtils.exportUsers),
             ),
           ),
         ],

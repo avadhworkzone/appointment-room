@@ -1,5 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/user_controller.dart';
@@ -31,13 +32,13 @@ class SettingsScreen extends StatelessWidget {
       try {
         await txn.execute("PRAGMA foreign_keys = OFF;");
 
-        if (table == "Users") {
+        if (table == StringUtils.users) {
           await txn.execute("DELETE FROM Users;");
           await userController.fetchUsers();
-        } else if (table == "Rooms") {
+        } else if (table == StringUtils.rooms) {
           await txn.execute("DELETE FROM Rooms;");
           await roomController.fetchRooms();
-        } else if (table == "Reservations") {
+        } else if (table == StringUtils.reservations) {
           await txn.execute("DELETE FROM Reservations;");
           await reservationController.fetchReservations();
         } else {
@@ -51,7 +52,7 @@ class SettingsScreen extends StatelessWidget {
 
         await txn.execute("PRAGMA foreign_keys = ON;");
       } catch (e) {
-        Get.snackbar("Error", "Database reset failed: ${e.toString()}");
+        Get.snackbar(StringUtils.error, "${StringUtils.dbResetFailed}: ${e.toString()}");
       }
     });
 
@@ -63,17 +64,17 @@ class SettingsScreen extends StatelessWidget {
     });
 
     isLoading.value = false; // ✅ Stop loading
-    Get.snackbar("Success", "${table ?? 'All Data'} reset successfully!");
+    Get.snackbar(StringUtils.success, "${table ?? StringUtils.allData} ${StringUtils.resetSuccess}");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Settings")),
+      appBar: AppBar(title: Text(StringUtils.settings)),
       body: Column(
         children: [
           Obx(() => SwitchListTile(
-            title: Text("Dark Mode"),
+            title: Text(StringUtils.darkMode),
             value: isDarkMode.value,
             onChanged: (value) {
               isDarkMode.value = value;
@@ -88,27 +89,27 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 ListTile(
                   leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text("Reset Entire Database"),
+                  title: Text(StringUtils.resetAll),
                   onTap: () => showResetOptions(),
                 ),
                 ListTile(
                   leading: Icon(Icons.people, color: Colors.blue),
-                  title: Text("Reset Users"),
-                  onTap: () => resetDatabase(table: "Users"),
+                  title: Text(StringUtils.resetUsers),
+                  onTap: () => resetDatabase(table: StringUtils.users),
                 ),
                 ListTile(
                   leading: Icon(Icons.meeting_room, color: Colors.green),
-                  title: Text("Reset Rooms"),
-                  onTap: () => resetDatabase(table: "Rooms"),
+                  title: Text(StringUtils.resetRooms),
+                  onTap: () => resetDatabase(table: StringUtils.rooms),
                 ),
                 ListTile(
                   leading: Icon(Icons.event, color: Colors.purple),
-                  title: Text("Reset Reservations"),
-                  onTap: () => resetDatabase(table: "Reservations"),
+                  title: Text(StringUtils.resetReservations),
+                  onTap: () => resetDatabase(table: StringUtils.reservations),
                 ),
                 ListTile(
                   leading: Icon(Icons.insert_drive_file_outlined, color: Colors.blue),
-                  title: Text("download db"),
+                  title: Text(StringUtils.downloadDB),
                   onTap: () async{
                     await DownloadDBFile.downloadDBFile();
 
@@ -116,7 +117,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text("Logout"),
+                  title: Text(StringUtils.logout),
                   onTap: () async{
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     await prefs.clear(); // ✅ Remove login session
@@ -135,10 +136,10 @@ class SettingsScreen extends StatelessWidget {
   /// ✅ Show Confirmation Dialog Before Reset
   void showResetOptions() {
     Get.defaultDialog(
-      title: "Reset Database",
-      content: Text("Are you sure you want to delete all data?"),
-      textCancel: "Cancel",
-      textConfirm: "Yes, Reset",
+      title: StringUtils.resetDatabase,
+      content: const Text(StringUtils.resetConfirmation),
+      textCancel: StringUtils.cancel,
+      textConfirm: StringUtils.confirmReset,
       confirmTextColor: Colors.white,
       onConfirm: () {
         Get.back(); // Close dialog

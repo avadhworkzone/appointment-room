@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import '../controller/reservation_controller.dart';
@@ -24,7 +25,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Reservation Details")),
+      appBar: AppBar(title: Text(StringUtils.reservationDetails)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -41,33 +42,45 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
               ),
             ),
             SizedBox(height: 10),
-            _buildInfoRow(Icons.phone, "Phone: ${widget.reservation.phone}"),
-            _buildInfoRow(Icons.email, "Email: ${widget.reservation.email}"),
+            _buildInfoRow(Icons.phone,
+                "${StringUtils.phoneLabel}: ${widget.reservation.phone}"),
+            _buildInfoRow(Icons.email,
+                "${StringUtils.emailLabel}: ${widget.reservation.email}"),
             _buildInfoRow(Icons.calendar_today,
-                "Check-in: ${widget.reservation.checkin}"),
+                "${StringUtils.checkIn}: ${widget.reservation.checkin}"),
             _buildInfoRow(Icons.calendar_today,
-                "Check-out: ${widget.reservation.checkout}"),
-            SizedBox(height: 16),
+                "${StringUtils.checkOut}: ${widget.reservation.checkout}"),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildGuestCount(
-                    Icons.person, "Adults", widget.reservation.adult),
-                _buildGuestCount(
-                    Icons.child_care, "Children", widget.reservation.child),
-                _buildGuestCount(Icons.pets, "Pets", widget.reservation.pet),
-              ],
+                    Icons.person, StringUtils.adults, widget.reservation.adult),
+                _buildGuestCount(Icons.child_care, StringUtils.children,
+                    widget.reservation.child),
+                _buildGuestCount(Icons.pets, StringUtils.pets,
+                    widget.reservation.pet),  ],
             ),
             Divider(thickness: 1, height: 24),
-            _buildPriceRow("Rate per Night", widget.reservation.ratePerNight),
-            _buildPriceRow("Subtotal", widget.reservation.subtotal),
-            _buildPriceRow("Tax (5%)", widget.reservation.tax),
-            _buildPriceRow("Discount", widget.reservation.discount),
-            _buildPriceRow("Grand Total", widget.reservation.grandTotal,
-                isBold: true),
-            _buildPriceRow("Prepayment", widget.reservation.prepayment),
-            _buildPriceRow("Balance", widget.reservation.balance,
-                isBold: true, color: Colors.red),
+            _buildPriceRow(
+                StringUtils.ratePerNight, widget.reservation.ratePerNight),
+            _buildPriceRow(StringUtils.subtotal, widget.reservation.subtotal),
+            _buildPriceRow(StringUtils.tax, widget.reservation.tax),
+            _buildPriceRow(
+                StringUtils.discount, widget.reservation.discount),
+            _buildPriceRow(
+              StringUtils.grandTotal,
+              widget.reservation.grandTotal,
+              isBold: true,
+            ),
+            _buildPriceRow(
+                StringUtils.prepayment, widget.reservation.prepayment),
+            _buildPriceRow(
+              StringUtils.balance,
+              widget.reservation.balance,
+              isBold: true,
+              color: Colors.red,
+            ),
             SizedBox(
               height: 50,
             ),
@@ -88,7 +101,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                           padding: const EdgeInsets.all(20),
                           child: Center(
                             child: Text(
-                              'Back',
+                              StringUtils.back,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
@@ -121,7 +134,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                           padding: const EdgeInsets.all(20),
                           child: Center(
                             child: Text(
-                              'Edit',
+                              StringUtils.edit,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
                             ),

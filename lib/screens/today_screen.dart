@@ -67,6 +67,7 @@
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/screens/reservation_detail_screen.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/reservation_controller.dart';
@@ -87,8 +88,8 @@ class _TodayScreenState extends State<TodayScreen>
   final ReservationController reservationController =
       Get.find<ReservationController>();
   final tabLabels = [
-    "Check-In",
-    "Check-Out",
+    StringUtils.checkInTab,
+    StringUtils.checkOutTab,
   ];
   late TabController _tabController;
 
@@ -109,7 +110,7 @@ class _TodayScreenState extends State<TodayScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Today's Reservations"),
+        title: const Text(StringUtils.todaysReservations),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -132,7 +133,7 @@ class _TodayScreenState extends State<TodayScreen>
       body: Obx(() {
         if (reservationController.reservationList.isEmpty) {
           return const Center(
-              child: Text("No reservations found. Add a new reservation!"));
+              child: Text(StringUtils.noReservationsMessage));
         }
 
         final now = DateFormat("yyyy-MM-dd").parse(DateTime.now().toString());
@@ -158,12 +159,12 @@ class _TodayScreenState extends State<TodayScreen>
             controller: _tabController,
             children: [
               checkInReservationList.isEmpty
-                  ? Center(child: Text("No check-in reservations for today."))
+                  ? Center(child: Text(StringUtils.noCheckInReservations))
                   : ReservationList(
                       reservationList: checkInReservationList,
                     ),
               checkOutReservationList.isEmpty
-                  ? Center(child: Text("No check-out reservations for today."))
+                  ? Center(child: Text(StringUtils.noCheckOutReservations))
                   : ReservationList(
                       reservationList: checkOutReservationList,
                     ),
@@ -187,11 +188,11 @@ class ReservationList extends StatelessWidget {
         showCheckboxColumn: false, // 👈 removes the checkbox
 
         columns: const [
-          DataColumn(label: Text('Guest Name')),
-          DataColumn(label: Text('Room')),
-          DataColumn(label: Text('Check-in')),
-          DataColumn(label: Text('Check-out')),
-          DataColumn(label: Text('pending Price')),
+          DataColumn(label: Text(StringUtils.guestName)),
+          DataColumn(label: Text(StringUtils.room)),
+          DataColumn(label: Text(StringUtils.checkIn)),
+          DataColumn(label: Text(StringUtils.checkOut)),
+          DataColumn(label: Text(StringUtils.pendingPrice)),
         ],
         rows: reservationList.map((reservation) {
           return DataRow(

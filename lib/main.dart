@@ -1,5 +1,6 @@
 // import 'package:cal_room/screens/login_screen.dart';
 import 'package:cal_room/screens/splash_screen.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // import 'package:sqflite/sqflite.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Reservation App',
+      title: StringUtils.appTitle,
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,

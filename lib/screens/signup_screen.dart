@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import '../controller/user_controller.dart';
 // import '../database/db_helper.dart';
@@ -51,7 +52,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Signup")),
+      appBar: AppBar(title: Text(StringUtils.signup)),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Center(
@@ -65,31 +66,31 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 50,),
                   TextFormField(
                     controller: usernameController,
-                    decoration: _inputDecoration("Username"),
-                    validator: (value) => value!.isEmpty ? "Enter username" : null,
+                    decoration: _inputDecoration(StringUtils.username),
+                    validator: (value) => value!.isEmpty ? StringUtils.enterUsername : null,
                   ),
                   SizedBox(height: 10),
                   TextFormField(
                     controller: passwordController,
-                    decoration: _inputDecoration("Password"),
+                    decoration: _inputDecoration(StringUtils.password),
                     obscureText: true,
-                    validator: (value) => value!.length < 6 ? "Password must be 6+ chars" : null,
+                    validator: (value) => value!.length < 6 ? StringUtils.passwordTooShort : null,
                   ),
                   SizedBox(height: 10),
 
                   TextFormField(
                     controller: fullnameController,
-                    decoration: _inputDecoration("FullName"),
+                    decoration: _inputDecoration(StringUtils.fullName),
                     obscureText: false,
-                    validator: (value) => value!.isEmpty ? "Enter FullName" : null,
+                    validator: (value) => value!.isEmpty ? StringUtils.enterFullName : null,
                   ),
                   SizedBox(height: 20),
                   isProcessing.value?CircularProgressIndicator():   ElevatedButton(onPressed:  isProcessing.value
                       ? null
-                      :_signup, child: Text("Signup")),
+                      :_signup, child: Text(StringUtils.signup)),
                   TextButton(
                     onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen())),
-                    child: Text("Already have an account? Login"),
+                    child: Text(StringUtils.loginRedirect),
                   ),
                 ],
               ),

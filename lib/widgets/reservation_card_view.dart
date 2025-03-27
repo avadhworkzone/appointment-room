@@ -174,6 +174,7 @@
 // }
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -267,9 +268,9 @@ class ReservationCardView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildGuestCount(Icons.person, "Adults", reservation.adult),
-                _buildGuestCount(Icons.child_care, "Children", reservation.child),
-                _buildGuestCount(Icons.pets, "Pets", reservation.pet),
+                _buildGuestCount(Icons.person, StringUtils.adults, reservation.adult),
+                _buildGuestCount(Icons.child_care, StringUtils.children, reservation.child),
+                _buildGuestCount(Icons.pets, StringUtils.pets, reservation.pet),
               ],
             ),
 
@@ -281,15 +282,15 @@ class ReservationCardView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildPriceRow("Room", 0, strValue: reservation.roomName),
-                    _buildPriceRow("Rate / Night", reservation.ratePerNight),
-                    _buildPriceRow("Subtotal", reservation.subtotal),
-                    _buildPriceRow("Tax (5%)", reservation.tax),
-                    _buildPriceRow("Discount", reservation.discount),
-                    _buildPriceRow("Grand Total", reservation.grandTotal,
+                    _buildPriceRow(StringUtils.room, 0, strValue: reservation.roomName),
+                    _buildPriceRow(StringUtils.rateNight, reservation.ratePerNight),
+                    _buildPriceRow(StringUtils.subtotal, reservation.subtotal),
+                    _buildPriceRow(StringUtils.tax, reservation.tax),
+                    _buildPriceRow(StringUtils.discount, reservation.discount),
+                    _buildPriceRow(StringUtils.grandTotal, reservation.grandTotal,
                         isBold: true),
-                    _buildPriceRow("Prepayment", reservation.prepayment),
-                    _buildPriceRow("Balance", reservation.balance,
+                    _buildPriceRow(StringUtils.prepayment, reservation.prepayment),
+                    _buildPriceRow(StringUtils.balance, reservation.balance,
                         isBold: true, color: Colors.red),
                   ],
                 ),
@@ -360,10 +361,10 @@ class ReservationCardView extends StatelessWidget {
 
   Future<void> _deleteReservation(int reservationId) async {
     Get.defaultDialog(
-      title: "Delete Reservation",
-      middleText: "Are you sure you want to delete this reservation?",
-      textConfirm: "Yes",
-      textCancel: "No",
+      title: StringUtils.deleteReservationTitle,
+      middleText: StringUtils.deleteReservationMessage,
+      textConfirm: StringUtils.yes,
+      textCancel: StringUtils.no,
       confirmTextColor: Colors.white,
       onConfirm: () async {
         await ReservationController.to.deleteReservation(reservationId);

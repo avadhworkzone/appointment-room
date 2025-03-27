@@ -1,4 +1,5 @@
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,10 +24,10 @@ class _RoomScreenState extends State<RoomScreen> {
 
   void confirmDelete(int id) {
     Get.defaultDialog(
-      title: "Delete Room",
-      middleText: "Are you sure you want to delete this room?",
-      textConfirm: "Delete",
-      textCancel: "Cancel",
+      title: StringUtils.deleteRoomTitle,
+      middleText: StringUtils.deleteRoomMessage,
+      textConfirm: StringUtils.delete,
+      textCancel: StringUtils.cancel,
       confirmTextColor: Colors.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
@@ -42,13 +43,13 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Rooms")),
+      appBar: AppBar(title: Text(StringUtils.rooms)),
       floatingActionButton: FloatingActionButton(
         onPressed: () => addEditRoomBottomSheet(),
         child: Icon(Icons.add),
       ),
       body: Obx(() => roomController.roomList.isEmpty
-          ? Center(child: Text("No rooms found. Add a new room!"))
+          ? Center(child: Text(StringUtils.noRoomsFound))
           : Column(
               children: [
                 Expanded(
@@ -86,10 +87,12 @@ class _RoomScreenState extends State<RoomScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       exportRoomsAsPDF(roomController.roomList);
-                      Get.snackbar("Export Successful",
-                          "PDF saved in documents folder!");
+                      Get.snackbar(
+                        StringUtils.exportSuccessTitle,
+                        StringUtils.exportRoomsSuccessMessage,
+                      );
                     },
-                    child: Text("Export Rooms as PDF"),
+                    child: Text(StringUtils.exportRooms),
                   ),
                 ),
               ],

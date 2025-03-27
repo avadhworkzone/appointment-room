@@ -1,4 +1,5 @@
 import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/reservation_card_view.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _ReservationScreenState extends State<ReservationScreen>
   Get.find<ReservationController>();
 
   late TabController _tabController;
-  String selectedFilter = "This Week";
+  String selectedFilter = StringUtils.thisWeek;
   DateTimeRange? customRange;
 
   @override
@@ -49,10 +50,10 @@ class _ReservationScreenState extends State<ReservationScreen>
       final checkin = DateFormat('yyyy-MM-dd').parse(r.checkin);
       final checkout = DateFormat('yyyy-MM-dd').parse(r.checkout);
 
-      if (type == 'Current') {
+      if (type == StringUtils.current) {
         return checkin.isBefore(now.add(Duration(days: 1))) &&
             checkout.isAfter(now.subtract(Duration(days: 1)));
-      } else if (type == 'Upcoming') {
+      } else if (type == StringUtils.upcoming) {
         return checkin.isAfter(now);
       } else {
         return checkout.isBefore(now);
@@ -60,20 +61,20 @@ class _ReservationScreenState extends State<ReservationScreen>
     }).toList();
 
     // No filter for "Current"
-    if (type == "Current") return list;
+    if (type == StringUtils.current) return list;
 
     // Apply filters only for Upcoming & History
     return list.where((r) {
       final checkin = DateFormat('yyyy-MM-dd').parse(r.checkin);
       switch (selectedFilter) {
-        case "This Week":
+        case StringUtils.thisWeek:
           final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
           final endOfWeek = startOfWeek.add(Duration(days: 6));
           return checkin.isAfter(startOfWeek.subtract(Duration(seconds: 1))) &&
               checkin.isBefore(endOfWeek.add(Duration(days: 1)));
-        case "This Month":
+        case StringUtils.thisMonth:
           return checkin.year == now.year && checkin.month == now.month;
-        case "Custom":
+        case StringUtils.custom:
           if (customRange == null) return true;
           return checkin.isAfter(customRange!.start.subtract(Duration(seconds: 1))) &&
               checkin.isBefore(customRange!.end.add(Duration(days: 1)));
@@ -85,12 +86,12 @@ class _ReservationScreenState extends State<ReservationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final tabLabels = ["Current", "Upcoming", "History"];
+    final tabLabels = [StringUtils.current, StringUtils.upcoming, StringUtils.history];
     final currentTab = tabLabels[_tabController.index];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Reservations"),
+        title: Text(StringUtils.reservations),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -110,15 +111,15 @@ class _ReservationScreenState extends State<ReservationScreen>
       ),
       body: Column(
         children: [
-          if (currentTab != "Current")
+          if (currentTab != StringUtils.current)
             Padding(
               padding: EdgeInsets.all(8),
               child: Wrap(
                 spacing: 8,
                 children: [
-                  _buildFilterChip("This Week"),
-                  _buildFilterChip("This Month"),
-                  _buildFilterChip("Custom"),
+                  _buildFilterChip(StringUtils.thisWeek),
+                  _buildFilterChip(StringUtils.thisMonth),
+                  _buildFilterChip(StringUtils.custom),
                 ],
               ),
             ),
@@ -128,7 +129,7 @@ class _ReservationScreenState extends State<ReservationScreen>
 
               if (filteredList.isEmpty) {
                 return Center(
-                  child: Text("No reservations found for selected filter."),
+                  child: Text(StringUtils.noReservationsFound),
                 );
               }
 
@@ -138,7 +139,7 @@ class _ReservationScreenState extends State<ReservationScreen>
                   final reservation = filteredList[index];
                   return ReservationCardView(
                     reservation: reservation,
-                    canEditDelete: currentTab != "History", // ✅ condition added
+                    canEditDelete: currentTab != StringUtils.history, // ✅ condition added
 
                     isFromToday: false,
                   );
@@ -156,7 +157,7 @@ class _ReservationScreenState extends State<ReservationScreen>
       label: Text(label,),
       selected: selectedFilter == label,
       onSelected: (selected) async {
-        if (label == "Custom" && selected) {
+        if (label == StringUtils.custom && selected) {
           final picked = await showDateRangePicker(
             context: context,
             firstDate: DateTime(2025),
@@ -171,7 +172,7 @@ class _ReservationScreenState extends State<ReservationScreen>
         } else {
           setState(() {
             selectedFilter = label;
-            if (label != "Custom") customRange = null;
+            if (label != StringUtils.custom) customRange = null;
           });
         }
       },

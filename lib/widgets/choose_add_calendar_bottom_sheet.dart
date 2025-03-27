@@ -1,3 +1,4 @@
+import 'package:cal_room/utils/string_utils.dart' show StringUtils;
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ void chooseAddCalendarBottomSheet(){
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Add",
+          Text(StringUtils.addTitle,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 20),
 
@@ -23,7 +24,7 @@ void chooseAddCalendarBottomSheet(){
               Get.back();
               addEditReservationBottomSheet();
             },
-            title: Text("Reservation"),
+            title: Text(StringUtils.reservation),
             leading: Icon(Icons.add),
           ),
           ListTile(
@@ -31,7 +32,7 @@ void chooseAddCalendarBottomSheet(){
               Get.back();
               addEditRoomBottomSheet();
             },
-            title: Text("Room"),
+            title: Text(StringUtils.room),
             leading: Icon(Icons.bedroom_parent_outlined),
           ),
         ],

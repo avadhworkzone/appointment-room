@@ -4,6 +4,7 @@ import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
 import 'package:cal_room/model/room_model.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -178,8 +179,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       Spacer(),
                       Text(
                         reservation == null
-                            ? "Add Reservation"
-                            : "Edit Reservation",
+                            ? StringUtils.addReservation
+                            : StringUtils.editReservation,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -198,7 +199,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                               return AlertDialog(
                                 insetPadding: EdgeInsets.zero,
                                 contentPadding: EdgeInsets.zero,
-                                title: Text("Room"),
+                                title: Text(StringUtils.room),
                                 content: SizedBox(
                                   width: Get.width - 60,
                                   child: SingleChildScrollView(
@@ -228,7 +229,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                                       onPressed: () {
                                         Get.back();
                                       },
-                                      child: Text('CANCEL')),
+                                      child: Text(StringUtils.cancelCapital)),
                                   TextButton(
                                       onPressed: () {
                                         if (selectedDialogRoom != null) {
@@ -241,7 +242,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                                           });
                                         }
                                       },
-                                      child: Text('OK')),
+                                      child: Text(StringUtils.ok)),
                                 ],
                               );
                             },
@@ -252,41 +253,41 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       controller: roomController,
                       decoration: InputDecoration(
                           suffixIcon: Icon(Icons.arrow_drop_down),
-                          labelText: "Room",
+                          labelText: StringUtils.room,
                           border: OutlineInputBorder()),
                       validator: (value) =>
-                          value!.isEmpty ? "Select room" : null,
+                          value!.isEmpty ? StringUtils.selectRoom : null,
                     ),
                   ),
                   _buildTextField(
                     fullnameController,
-                    "Full Name",
+                    StringUtils.fullName,
                     keyboardType: TextInputType.text,
                     validator: (value) =>
-                        value!.isEmpty ? "Enter full Name" : null,
+                        value!.isEmpty ? StringUtils.enterFullName : null,
                   ),
-                  _buildTextField(phoneController, "Phone",
+                  _buildTextField(phoneController, StringUtils.phone,
                       keyboardType: TextInputType.phone, validator: (value) {
                     if (value!.isEmpty) {
-                      return "Enter mobile number";
+                      return StringUtils.enterMobileNumber;
                     } else if (value.length < 10 || value.length > 10) {
-                      return "Phone number must be 10 digits";
+                      return StringUtils.phoneDigits;
                     }
                     return null;
                   }),
                   _buildTextField(
                     emailController,
-                    "Email",
+                    StringUtils.email,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value!.isEmpty ? "Enter email" : null,
+                    validator: (value) => value!.isEmpty ? StringUtils.enterEmail : null,
                   ),
                   SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildCounter("Adults", adultCount),
-                      _buildCounter("Children", childCount),
-                      _buildCounter("Pets", petCount),
+                      _buildCounter(StringUtils.adults, adultCount),
+                      _buildCounter(StringUtils.children, childCount),
+                      _buildCounter(StringUtils.pets, petCount),
                     ],
                   ),
                   SizedBox(height: 10),
@@ -296,13 +297,13 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                     children: [
                       Expanded(
                           child: _buildDateField(
-                              "Check-in Date",
+                              StringUtils.checkinDate,
                               checkinController,
                               () => selectDate(Get.context!, true))),
                       SizedBox(width: 20),
                       Expanded(
                           child: _buildDateField(
-                              "Check-out Date",
+                              StringUtils.checkoutDate,
                               checkoutController,
                               () => selectDate(Get.context!, false))),
                     ],
@@ -311,33 +312,33 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
 
                   _buildTextField(
                     rateController,
-                    "Rate Per Night",
+                    StringUtils.ratePerNight,
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        value!.isEmpty ? "Enter rate per night" : null,
+                        value!.isEmpty ?  StringUtils.enterRatePerNight : null,
                   ),
                   _buildTextField(
                     discountController,
-                    "Discount",
+                    StringUtils.discount,
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        value!.isEmpty ? "Enter discount" : null,
+                        value!.isEmpty ? StringUtils.enterDiscount : null,
                   ),
                   _buildTextField(
                     prepaymentController,
-                    "Prepayment",
+                    StringUtils.prepayment,
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        value!.isEmpty ? "Enter prepayment" : null,
+                        value!.isEmpty ? StringUtils.enterPrepayment : null,
                   ),
                   SizedBox(height: 10),
                   Obx(() => Column(
                         children: [
-                          _buildSummaryRow("Subtotal", subtotal.value),
-                          _buildSummaryRow("Tax (5%)", tax.value),
-                          _buildSummaryRow("Grand Total", grandTotal.value,
+                          _buildSummaryRow(StringUtils.subtotal, subtotal.value),
+                          _buildSummaryRow(StringUtils.tax, tax.value),
+                          _buildSummaryRow(StringUtils.grandTotal, grandTotal.value,
                               isBold: true),
-                          _buildSummaryRow("Balance", balance.value,
+                          _buildSummaryRow(StringUtils.balance, balance.value,
                               isBold: true, color: Colors.red),
                         ],
                       )),
@@ -350,8 +351,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                             DateTime.parse(checkoutController.text);
                         if (checkIn.isAtSameMomentAs(checkOut)) {
                           Get.snackbar(
-                            "Attention",
-                            "The date of Check-in must be less than the date of Check-out!",
+                            StringUtils.attention,
+                            StringUtils.dateError,
                             backgroundColor: Colors.blue,
                           );
                           return;
@@ -416,8 +417,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                         });
                         if (isContain) {
                           Get.snackbar(
-                            "Attention",
-                            "Check-in or Check-out date already exist.",
+                            StringUtils.attention,
+                            StringUtils.overlapDateError,
                             backgroundColor: Colors.blue,
                           );
                           return;
@@ -470,8 +471,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       ),
                     )
                         :Text(reservation == null
-                        ? "Add Reservation"
-                        : "Update Reservation"),
+                        ? StringUtils.addReservation
+                        : StringUtils.updateReservation),
                   ),
                 ],
               ),

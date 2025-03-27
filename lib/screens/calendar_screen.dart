@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:cal_room/widgets/choose_add_calendar_bottom_sheet.dart';
@@ -158,7 +159,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             onTap: (){
               scrollToToday();
             },
-            child: Text('Go To Today')),
+            child: Text(StringUtils.goToToday)),
       )],),
       floatingActionButton: FloatingActionButton(
         onPressed: () => chooseAddCalendarBottomSheet(),
@@ -225,9 +226,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('Rooms'),
+                                        Text(StringUtils.rooms),
                                         ListTile(
-
                                         title: Text(e.roomName,
                                             style: TextStyle(fontWeight: FontWeight.bold)),
                                         // subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
@@ -495,10 +495,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
   void confirmDelete(int id) {
     Get.defaultDialog(
-      title: "Delete Room",
-      middleText: "Are you sure you want to delete this room?",
-      textConfirm: "Delete",
-      textCancel: "Cancel",
+      title: StringUtils.deleteRoomTitle,
+      middleText: StringUtils.deleteRoomMessage,
+      textConfirm: StringUtils.delete,
+      textCancel: StringUtils.cancel,
       confirmTextColor: Colors.white,
       onConfirm: () async {
         // isProcessing.value = true; // ✅ Prevent multiple clicks

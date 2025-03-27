@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/room_model.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,14 +35,14 @@ void addEditRoomBottomSheet({RoomModel? room}) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(room == null ? "Add Room" : "Edit Room",
+            Text(room == null ? StringUtils.addRoom : StringUtils.editRoom,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             TextFormField(
               controller: roomNameController,
-              validator: (value) => value!.isEmpty ? "Enter room name" : null,
+              validator: (value) => value!.isEmpty ? StringUtils.enterRoomName : null,
               decoration: InputDecoration(
-                labelText: "Room Name",
+                labelText: StringUtils.roomName,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -51,7 +52,7 @@ void addEditRoomBottomSheet({RoomModel? room}) {
                 // validator: (value) =>
                 // value!.isEmpty ? "Enter room description" : null,
                 decoration: InputDecoration(
-                  labelText: "Room Description",
+                  labelText: StringUtils.roomDescription,
                   border: OutlineInputBorder(),
                 )),
             SizedBox(height: 20),
@@ -61,7 +62,7 @@ void addEditRoomBottomSheet({RoomModel? room}) {
                       : () async {
                           if (formKey.currentState!.validate()) {
                             if (roomNameController.text.isEmpty) {
-                              Get.snackbar("Error", "Room Name is required");
+                              Get.snackbar(StringUtils.error, StringUtils.roomNameRequired,);
                               return;
                             }
 
@@ -93,7 +94,8 @@ void addEditRoomBottomSheet({RoomModel? room}) {
                             Get.back();
                           }
                         },
-                  child: Text(room == null ? "Add Room" : "Update Room"),
+                  child: Text(room == null ?  StringUtils.addRoom
+                    : StringUtils.updateRoom,),
                 )),
           ],
         ),

@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,11 +51,11 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('username', username);
 
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Login Successful!")));
+            .showSnackBar(SnackBar(content: Text(StringUtils.loginSuccess)));
         Get.off(() => MainScreen()); // ✅ Navigate to Home
       } else {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Invalid Credentials!")));
+            .showSnackBar(SnackBar(content: Text(StringUtils.invalidCredentials)));
       }
 
       isProcessing.value = false;
@@ -71,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
+      appBar: AppBar(title: Text(StringUtils.login)),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Center(
@@ -90,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: usernameController,
                     decoration: _inputDecoration("Username"),
                     validator: (value) =>
-                        value!.isEmpty ? "Enter username" : null,
+                        value!.isEmpty ? StringUtils.enterUsername : null,
                   ),
                   SizedBox(height: 10),
                   TextFormField(
@@ -98,17 +99,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: _inputDecoration("Password"),
                     obscureText: true,
                     validator: (value) =>
-                        value!.length < 6 ? "Password must be 6+ chars" : null,
+                        value!.length < 6 ? StringUtils.passwordTooShort : null,
                   ),
                   SizedBox(height: 20),
                   Obx(() => isProcessing.value
                       ? CircularProgressIndicator()
                       : ElevatedButton(
-                          onPressed: _login, child: Text("Login"))),
+                          onPressed: _login, child: Text(StringUtils.login))),
                   TextButton(
                     onPressed: () => Get.off(() => SignupScreen()),
                     // ✅ GetX navigation
-                    child: Text("Don't have an account? Signup"),
+                    child: Text(StringUtils.signupRedirect),
                   ),
                 ],
               ),

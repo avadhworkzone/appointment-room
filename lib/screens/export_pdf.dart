@@ -2,6 +2,7 @@
 
 import 'dart:developer';
 import 'dart:io';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 // import 'package:pdf/pdf.dart';
@@ -19,10 +20,15 @@ Future<void> exportReservationsAsPDF(List<ReservationModel> reservations) async 
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text("Reservation Report", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text(StringUtils.reservationReportTitle, style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
-              headers: ["Full Name", "Check-in", "Check-out", "Phone", "Email", "Total"],
+              headers: [StringUtils.fullName,
+                StringUtils.checkIn,
+                StringUtils.checkOut,
+                StringUtils.phoneLabel,
+                StringUtils.emailLabel,
+                StringUtils.total],
               data: reservations.map((res) => [
                 res.fullname,
                 res.checkin,
@@ -57,10 +63,10 @@ Future<void> exportUsersAsPDF(List<UserModel> users) async {
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text("User Report", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text(StringUtils.userReportTitle, style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
-              headers: ["ID", "Mobile NUmber", "Full Name"],
+              headers: [StringUtils.id, StringUtils.mobileNumber, StringUtils.fullName],
               data: users.map((user) => [user.id, user.mobileNumber, user.fullname]).toList(),
               border: pw.TableBorder.all(),
               cellAlignment: pw.Alignment.centerLeft,
@@ -88,10 +94,13 @@ Future<void> exportRoomsAsPDF(List<RoomModel> rooms) async {
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text("Room Report", style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text(StringUtils.roomReportTitle, style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
-              headers: ["Room ID", "Name", "Description", "User ID"],
+              headers: [StringUtils.roomId,
+                StringUtils.roomName,
+                StringUtils.description,
+                StringUtils.userId],
               data: rooms.map((room) => [room.id, room.roomName, room.roomDesc, room.userId]).toList(),
               border: pw.TableBorder.all(),
               cellAlignment: pw.Alignment.centerLeft,

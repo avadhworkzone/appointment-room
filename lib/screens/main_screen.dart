@@ -4,6 +4,7 @@ import 'package:cal_room/screens/reservation_screen.dart';
 import 'package:cal_room/screens/settings_screen.dart';
 import 'package:cal_room/screens/today_screen.dart';
 import 'package:cal_room/screens/user_screen.dart';
+import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 
 import '../controller/badge_controller.dart';
@@ -57,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         leading:        Icon(Icons.calendar_month,size: 30,), // ✅ Replace with your logo
           
-        title: Text("Reservation App"),
+        title: Text(StringUtils.appTitle),
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.white),
@@ -78,12 +79,12 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         destinations: [
-          _buildNavItem(Icons.calendar_today, "Calendar", badgeController.calendarBadge.value),
+          _buildNavItem(Icons.calendar_today, StringUtils.calendar, badgeController.calendarBadge.value),
           // _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
-          _buildNavItem(Icons.meeting_room, "Today", badgeController.roomsBadge.value),
-          _buildNavItem(Icons.event, "Reservations", badgeController.reservationsBadge.value),
-          _buildNavItem(Icons.person, "Users", badgeController.usersBadge.value),
-          _buildNavItem(Icons.settings, "Settings", badgeController.settingsBadge.value),
+          _buildNavItem(Icons.meeting_room, StringUtils.today, badgeController.roomsBadge.value),
+          _buildNavItem(Icons.event, StringUtils.reservations, badgeController.reservationsBadge.value),
+          _buildNavItem(Icons.person, StringUtils.users, badgeController.usersBadge.value),
+          _buildNavItem(Icons.settings, StringUtils.settings, badgeController.settingsBadge.value),
         ],
       )),
     );
@@ -143,7 +144,7 @@ class DataSearch extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return Center(child: Text("Result: $query", style: TextStyle(color: Colors.black, fontSize: 18)));
+    return Center(child: Text("${StringUtils.searchResult}: $query", style: TextStyle(color: Colors.black, fontSize: 18)));
   }
 
   @override
