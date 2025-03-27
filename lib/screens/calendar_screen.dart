@@ -152,7 +152,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Calendar")),
+      appBar: AppBar(title: Text("Calendar"), actions: [Padding(
+        padding: const EdgeInsets.only(right: 15),
+        child: GestureDetector(
+            onTap: (){
+              scrollToToday();
+            },
+            child: Text('Go To Today')),
+      )],),
       floatingActionButton: FloatingActionButton(
         onPressed: () => chooseAddCalendarBottomSheet(),
         child: Icon(Icons.add),
@@ -161,8 +168,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ? Center(child: CircularProgressIndicator())
           : buildCalendarBody(),
     );
-  }
 
+  }
+  void scrollToToday() {
+    final todayIndex = calenderDates.indexWhere((date) =>
+    DateFormat("dd-MM-yyyy").format(date) ==
+        DateFormat("dd-MM-yyyy").format(DateTime.now()));
+
+    if (todayIndex != -1) {
+      final scrollOffset = todayIndex * 50.0; // width of each day column
+      scrollController.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
   Widget buildCalendarBody() {
     return SingleChildScrollView(
       child: Column(
