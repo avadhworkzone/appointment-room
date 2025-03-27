@@ -201,23 +201,26 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                                 title: Text("Room"),
                                 content: SizedBox(
                                   width: Get.width - 60,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: RoomController.to.roomList.value
-                                        .map((e) => ListTile(
-                                              onTap: () {
-                                                dialogSetState(() {
-                                                  selectedDialogRoom = e;
-                                                });
-                                              },
-                                              leading: Icon(
-                                                  selectedDialogRoom?.id == e.id
-                                                      ? Icons
-                                                          .radio_button_checked
-                                                      : Icons.radio_button_off),
-                                              title: Text(e.roomName),
-                                            ))
-                                        .toList(),
+                                  child: SingleChildScrollView(
+                                    physics: ClampingScrollPhysics(),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: RoomController.to.roomList.value
+                                          .map((e) => ListTile(
+                                                onTap: () {
+                                                  dialogSetState(() {
+                                                    selectedDialogRoom = e;
+                                                  });
+                                                },
+                                                leading: Icon(
+                                                    selectedDialogRoom?.id == e.id
+                                                        ? Icons
+                                                            .radio_button_checked
+                                                        : Icons.radio_button_off),
+                                                title: Text(e.roomName),
+                                              ))
+                                          .toList(),
+                                    ),
                                   ),
                                 ),
                                 actions: [

@@ -2,6 +2,7 @@
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
+import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:cal_room/widgets/choose_add_calendar_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -190,18 +191,62 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                           Column(
                             children: RoomController.to.roomList.map((e) {
-                              return Container(
-                                height: 50,
-                                margin: EdgeInsets.fromLTRB(2, 0, 2, 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    e.roomName,
-                                    style: TextStyle(
-                                        fontSize: 20, color: Colors.white),
+                              return GestureDetector(
+                                onTap: (){
+                                  Get.bottomSheet(Container(
+                                    padding: EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Rooms'),
+                                        ListTile(
+
+                                        title: Text(e.roomName,
+                                            style: TextStyle(fontWeight: FontWeight.bold)),
+                                        // subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
+                                        subtitle: Text(e.roomDesc),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                                icon: Icon(Icons.edit, color: Colors.blue),
+                                                onPressed: () {
+                                                  Get.back();
+                                                  addEditRoomBottomSheet(room: e);
+                                                }
+                                            ),
+                                            IconButton(
+                                                icon: Icon(Icons.delete, color: Colors.red),
+                                                onPressed: () {
+                                                  Get.back();
+                                                  confirmDelete(e.id!);
+                                                }
+                                            ),
+                                          ],
+                                        ),
+                                                                          ),
+                                      ],
+                                    ),));
+                                },
+                                child: Container(
+                                  height: 50,
+                                  margin: EdgeInsets.fromLTRB(2, 0, 2, 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      e.roomName,
+                                      style: TextStyle(
+                                          fontSize: 20, color: Colors.white),
+                                    ),
                                   ),
                                 ),
                               );
@@ -425,6 +470,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
               )),
         ],
       ),
+    );
+  }
+  void confirmDelete(int id) {
+    Get.defaultDialog(
+      title: "Delete Room",
+      middleText: "Are you sure you want to delete this room?",
+      textConfirm: "Delete",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        // isProcessing.value = true; // ✅ Prevent multiple clicks
+        await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
+        await Get.find<RoomController>().deleteRoom(id);
+        await Get.find<RoomController>().fetchRooms(); // ✅ Refresh list after delete
+        // isProcessing.value = false;
+        Get.back();
+      },
     );
   }
 }
