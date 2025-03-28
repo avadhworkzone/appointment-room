@@ -1,5 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -88,27 +89,27 @@ class SettingsScreen extends StatelessWidget {
             return Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red),
+                  leading: Icon(Icons.delete, color: ColorUtils.red),
                   title: Text(StringUtils.resetAll),
                   onTap: () => showResetOptions(),
                 ),
                 ListTile(
-                  leading: Icon(Icons.people, color: Colors.blue),
+                  leading: Icon(Icons.people, color: ColorUtils.blue),
                   title: Text(StringUtils.resetUsers),
                   onTap: () => resetDatabase(table: StringUtils.users),
                 ),
                 ListTile(
-                  leading: Icon(Icons.meeting_room, color: Colors.green),
+                  leading: Icon(Icons.meeting_room, color: ColorUtils.green),
                   title: Text(StringUtils.resetRooms),
                   onTap: () => resetDatabase(table: StringUtils.rooms),
                 ),
                 ListTile(
-                  leading: Icon(Icons.event, color: Colors.purple),
+                  leading: Icon(Icons.event, color: ColorUtils.purple),
                   title: Text(StringUtils.resetReservations),
                   onTap: () => resetDatabase(table: StringUtils.reservations),
                 ),
                 ListTile(
-                  leading: Icon(Icons.insert_drive_file_outlined, color: Colors.blue),
+                  leading: Icon(Icons.insert_drive_file_outlined, color: ColorUtils.blue),
                   title: Text(StringUtils.downloadDB),
                   onTap: () async{
                     await DownloadDBFile.downloadDBFile();
@@ -116,7 +117,7 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
+                  leading: Icon(Icons.logout, color: ColorUtils.red),
                   title: Text(StringUtils.logout),
                   onTap: () async{
                     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -140,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
       content: const Text(StringUtils.resetConfirmation),
       textCancel: StringUtils.cancel,
       textConfirm: StringUtils.confirmReset,
-      confirmTextColor: Colors.white,
+      confirmTextColor: ColorUtils.white,
       onConfirm: () {
         Get.back(); // Close dialog
         resetDatabase();

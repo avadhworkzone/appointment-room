@@ -4,6 +4,7 @@ import 'package:cal_room/screens/reservation_screen.dart';
 import 'package:cal_room/screens/settings_screen.dart';
 import 'package:cal_room/screens/today_screen.dart';
 import 'package:cal_room/screens/user_screen.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -61,7 +62,7 @@ class _MainScreenState extends State<MainScreen> {
         title: Text(StringUtils.appTitle),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
+            icon: Icon(Icons.search, color: ColorUtils.white),
             onPressed: () {
               showSearch(context: context, delegate: DataSearch());
             },
@@ -103,11 +104,11 @@ class _MainScreenState extends State<MainScreen> {
           //     top: -2,
           //     child: Container(
           //       padding: EdgeInsets.all(4),
-          //       decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+          //       decoration: BoxDecoration(color: ColorUtils.red, shape: BoxShape.circle),
           //       constraints: BoxConstraints(minWidth: 18, minHeight: 18),
           //       child: Text(
           //         badgeCount > 99 ? "99+" : badgeCount.toString(),
-          //         style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          //         style: TextStyle(color: ColorUtils.white, fontSize: 12, fontWeight: FontWeight.bold),
           //         textAlign: TextAlign.center,
           //       ),
           //     ),
@@ -133,18 +134,18 @@ class DataSearch extends SearchDelegate<String> {
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(icon: Icon(Icons.clear, color: Colors.black), onPressed: () => query = ""),
+      IconButton(icon: Icon(Icons.clear, color: ColorUtils.black), onPressed: () => query = ""),
     ];
   }
 
   @override
   Widget? buildLeading(BuildContext context) {
-    return IconButton(icon: Icon(Icons.arrow_back, color: Colors.black), onPressed: () => close(context, ""));
+    return IconButton(icon: Icon(Icons.arrow_back, color: ColorUtils.black), onPressed: () => close(context, ""));
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return Center(child: Text("${StringUtils.searchResult}: $query", style: TextStyle(color: Colors.black, fontSize: 18)));
+    return Center(child: Text("${StringUtils.searchResult}: $query", style: TextStyle(color: ColorUtils.black, fontSize: 18)));
   }
 
   @override
@@ -153,8 +154,8 @@ class DataSearch extends SearchDelegate<String> {
     return ListView.builder(
       itemCount: suggestions.length,
       itemBuilder: (context, index) => ListTile(
-        leading: Icon(Icons.search, color: Colors.blue),
-        title: Text(suggestions[index], style: TextStyle(color: Colors.black)),
+        leading: Icon(Icons.search, color: ColorUtils.blue),
+        title: Text(suggestions[index], style: TextStyle(color: ColorUtils.black)),
         onTap: () => query = suggestions[index],
       ),
     );

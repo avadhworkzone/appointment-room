@@ -1,3 +1,4 @@
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart' show StringUtils;
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
@@ -9,7 +10,7 @@ void chooseAddCalendarBottomSheet(){
     Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorUtils.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(

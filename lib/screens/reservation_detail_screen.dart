@@ -1,5 +1,6 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
               StringUtils.balance,
               widget.reservation.balance,
               isBold: true,
-              color: Colors.red,
+              color: ColorUtils.red,
             ),
             SizedBox(
               height: 50,
@@ -95,7 +96,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.grey, width: 1),
+                          border: Border.all(color: ColorUtils.grey, width: 1),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
@@ -126,9 +127,9 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: ColorUtils.blue,
                           borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.grey, width: 1),
+                          border: Border.all(color: ColorUtils.grey, width: 1),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
@@ -136,7 +137,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                             child: Text(
                               StringUtils.edit,
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
+                                  fontSize: 18, fontWeight: FontWeight.bold,color: ColorUtils.white),
                             ),
                           ),
                         ),
@@ -157,7 +158,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey),
+          Icon(icon, size: 20, color: ColorUtils.grey),
           SizedBox(width: 8),
           Text(text, style: TextStyle(fontSize: 18)),
         ],
@@ -168,7 +169,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
   Widget _buildGuestCount(IconData icon, String label, int count) {
     return Row(
       children: [
-        Icon(icon, size: 25, color: Colors.blue),
+        Icon(icon, size: 25, color: ColorUtils.blue),
         SizedBox(width: 4),
         Text("$label: $count", style: TextStyle(fontSize: 18)),
       ],

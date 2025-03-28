@@ -4,6 +4,7 @@ import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
 import 'package:cal_room/model/room_model.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -155,7 +156,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorUtils.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: StatefulBuilder(
@@ -174,7 +175,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           },
                           child: Icon(
                             Icons.arrow_back_outlined,
-                            color: Colors.black,
+                            color: ColorUtils.black,
                           )),
                       Spacer(),
                       Text(
@@ -339,7 +340,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           _buildSummaryRow(StringUtils.grandTotal, grandTotal.value,
                               isBold: true),
                           _buildSummaryRow(StringUtils.balance, balance.value,
-                              isBold: true, color: Colors.red),
+                              isBold: true, color: ColorUtils.red),
                         ],
                       )),
                   SizedBox(height: 10),
@@ -353,7 +354,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           Get.snackbar(
                             StringUtils.attention,
                             StringUtils.dateError,
-                            backgroundColor: Colors.blue,
+                            backgroundColor: ColorUtils.blue,
                           );
                           return;
                         }
@@ -419,7 +420,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                           Get.snackbar(
                             StringUtils.attention,
                             StringUtils.overlapDateError,
-                            backgroundColor: Colors.blue,
+                            backgroundColor: ColorUtils.blue,
                           );
                           return;
                         }
@@ -466,7 +467,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        color: ColorUtils.white,
                         strokeWidth: 2,
                       ),
                     )
@@ -531,7 +532,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
               onPressed: () {
                 if (count.value > 0) count.value--;
               },
-              icon: Icon(Icons.remove_circle_outline, color: Colors.red),
+              icon: Icon(Icons.remove_circle_outline, color: ColorUtils.red),
             ),
             Obx(() =>
                 Text(count.value.toString(), style: TextStyle(fontSize: 18))),
@@ -539,7 +540,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
               onPressed: () {
                 count.value++;
               },
-              icon: Icon(Icons.add_circle_outline, color: Colors.green),
+              icon: Icon(Icons.add_circle_outline, color: ColorUtils.green),
             ),
           ],
         ),
@@ -549,7 +550,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
 
   /// ✅ Summary Row Widget
   Widget _buildSummaryRow(String label, double value,
-      {bool isBold = false, Color color = Colors.black}) {
+      {bool isBold = false, Color color = ColorUtils.black}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(

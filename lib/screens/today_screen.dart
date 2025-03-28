@@ -67,6 +67,7 @@
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/screens/reservation_detail_screen.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -113,9 +114,9 @@ class _TodayScreenState extends State<TodayScreen>
         title: const Text(StringUtils.todaysReservations),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          indicatorColor: ColorUtils.white,
+          labelColor: ColorUtils.white,
+          unselectedLabelColor: ColorUtils.white70,
           labelStyle: TextStyle(fontWeight: FontWeight.bold),
           // Selected tab bold
           unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
@@ -184,7 +185,7 @@ class ReservationList extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        headingRowColor: WidgetStateProperty.all(Colors.grey.shade200),
+        headingRowColor: WidgetStateProperty.all(ColorUtils.grey.shade200),
         showCheckboxColumn: false, // 👈 removes the checkbox
 
         columns: const [

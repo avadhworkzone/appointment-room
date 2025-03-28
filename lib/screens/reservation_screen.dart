@@ -1,4 +1,5 @@
 import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/reservation_card_view.dart';
@@ -94,9 +95,9 @@ class _ReservationScreenState extends State<ReservationScreen>
         title: Text(StringUtils.reservations),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          indicatorColor: ColorUtils.white,
+          labelColor: ColorUtils.white,
+          unselectedLabelColor: ColorUtils.white70,
           labelStyle: TextStyle(fontWeight: FontWeight.bold),        // Selected tab bold
           unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal), // Unselected tab normal
           tabs: tabLabels.map((label) => Tab(text: label)).toList(),

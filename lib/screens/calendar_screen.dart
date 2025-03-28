@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
@@ -218,7 +219,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   Get.bottomSheet(Container(
                                     padding: EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: ColorUtils.white,
                                       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                                     ),
                                     child: Column(
@@ -236,14 +237,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
-                                                icon: Icon(Icons.edit, color: Colors.blue),
+                                                icon: Icon(Icons.edit, color: ColorUtils.blue),
                                                 onPressed: () {
                                                   Get.back();
                                                   addEditRoomBottomSheet(room: e);
                                                 }
                                             ),
                                             IconButton(
-                                                icon: Icon(Icons.delete, color: Colors.red),
+                                                icon: Icon(Icons.delete, color: ColorUtils.red),
                                                 onPressed: () {
                                                   Get.back();
                                                   confirmDelete(e.id!);
@@ -259,14 +260,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   height: 50,
                                   margin: EdgeInsets.fromLTRB(2, 0, 2, 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.green,
+                                    color: ColorUtils.green,
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Center(
                                     child: Text(
                                       e.roomName,
                                       style: TextStyle(
-                                          fontSize: 20, color: Colors.white),
+                                          fontSize: 20, color: ColorUtils.white),
                                     ),
                                   ),
                                 ),
@@ -348,7 +349,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                       width: 50,
                                                       decoration: BoxDecoration(
                                                         border: Border.all(
-                                                          color: Colors.grey
+                                                          color: ColorUtils.grey
                                                               .withValues(
                                                                   alpha: 0.3),
                                                           width: 0.4,
@@ -370,8 +371,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                         Center(
                                                             child:
                                                                 VerticalDivider(
-                                                                    color: Colors
-                                                                        .blue)),
+                                                                    color: ColorUtils.blue)),
                                                         Align(
                                                           alignment: Alignment
                                                               .topCenter,
@@ -384,7 +384,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                             child: CircleAvatar(
                                                               radius: 6,
                                                               backgroundColor:
-                                                                  Colors.blue,
+                                                              ColorUtils.blue,
                                                             ),
                                                           ),
                                                         ),
@@ -468,8 +468,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                                 style: TextStyle(
                                                   color:
                                                       reservation.balance == 0
-                                                          ? Colors.black
-                                                          : Colors.white,
+                                                          ? ColorUtils.black
+                                                          : ColorUtils.white,
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.bold,
                                                 ),

@@ -1,5 +1,6 @@
 // import 'package:cal_room/screens/login_screen.dart';
 import 'package:cal_room/screens/splash_screen.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -39,14 +40,14 @@ class MyApp extends StatelessWidget {
       title: StringUtils.appTitle,
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
-        scaffoldBackgroundColor: Colors.grey[100],
+        colorSchemeSeed: ColorUtils.blue,
+        scaffoldBackgroundColor: ColorUtils.grey[100],
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
+          backgroundColor: ColorUtils.blue,
+          foregroundColor: ColorUtils.white,
           elevation: 4,
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: ColorUtils.white),
       ),
       home: SplashScreen(),
     );

@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/room_model.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,7 +28,7 @@ void addEditRoomBottomSheet({RoomModel? room}) {
     Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorUtils.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Form(

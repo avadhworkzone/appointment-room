@@ -33,12 +33,12 @@
 //                 Row(
 //                   children: [
 //                     IconButton(
-//                       icon: Icon(Icons.edit, color: Colors.blue),
+//                       icon: Icon(Icons.edit, color: ColorUtils.blue),
 //                       onPressed: () => addEditReservationBottomSheet(
 //                           reservation: reservation),
 //                     ),
 //                     IconButton(
-//                         icon: Icon(Icons.delete, color: Colors.red),
+//                         icon: Icon(Icons.delete, color: ColorUtils.red),
 //                         onPressed: () async {
 //                           await _deleteReservation(reservation.id!);
 //                           await ReservationController.to.fetchReservations();
@@ -91,7 +91,7 @@
 //                       isBold: true),
 //                   _buildPriceRow("Prepayment", reservation.prepayment),
 //                   _buildPriceRow("Balance", reservation.balance,
-//                       isBold: true, color: Colors.red),
+//                       isBold: true, color: ColorUtils.red),
 //                 ],
 //               ),
 //           ],
@@ -104,7 +104,7 @@
 //   Widget _buildInfoRow(IconData icon, String text) {
 //     return Row(
 //       children: [
-//         Icon(icon, size: 20, color: Colors.grey[700]),
+//         Icon(icon, size: 20, color: ColorUtils.grey[700]),
 //         SizedBox(width: 8),
 //         Expanded(
 //           child: Text(
@@ -121,18 +121,18 @@
 //   Widget _buildGuestCount(IconData icon, String label, int count) {
 //     return Column(
 //       children: [
-//         Icon(icon, size: 24, color: Colors.blue),
+//         Icon(icon, size: 24, color: ColorUtils.blue),
 //         SizedBox(height: 4),
 //         Text("$count",
 //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-//         Text(label, style: TextStyle(fontSize: 14, color: Colors.grey)),
+//         Text(label, style: TextStyle(fontSize: 14, color: ColorUtils.grey)),
 //       ],
 //     );
 //   }
 //
 //   /// ✅ **Builds Price Row (Rate, Subtotal, Tax, Grand Total, etc.)**
 //   Widget _buildPriceRow(String label, double value,
-//       {bool isBold = false, Color color = Colors.black, String? strValue}) {
+//       {bool isBold = false, Color color = ColorUtils.black, String? strValue}) {
 //     return Padding(
 //       padding: EdgeInsets.symmetric(vertical: 4),
 //       child: Row(
@@ -163,7 +163,7 @@
 //       middleText: "Are you sure you want to delete this reservation?",
 //       textConfirm: "Yes",
 //       textCancel: "No",
-//       confirmTextColor: Colors.white,
+//       confirmTextColor: ColorUtils.white,
 //       onConfirm: () async {
 //         await ReservationController.to.deleteReservation(reservationId);
 //         Get.back();
@@ -174,6 +174,7 @@
 // }
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -221,12 +222,12 @@ class ReservationCardView extends StatelessWidget {
                 canEditDelete==false?SizedBox():   Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue),
+                      icon: Icon(Icons.edit, color: ColorUtils.blue),
                       onPressed: () => addEditReservationBottomSheet(
                           reservation: reservation),
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: ColorUtils.red),
                       onPressed: () async {
                         await _deleteReservation(reservation.id!);
                         await ReservationController.to.fetchReservations();
@@ -291,7 +292,7 @@ class ReservationCardView extends StatelessWidget {
                         isBold: true),
                     _buildPriceRow(StringUtils.prepayment, reservation.prepayment),
                     _buildPriceRow(StringUtils.balance, reservation.balance,
-                        isBold: true, color: Colors.red),
+                        isBold: true, color: ColorUtils.red),
                   ],
                 ),
               ),
@@ -307,7 +308,7 @@ class ReservationCardView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.grey[600]),
+          Icon(icon, size: 18, color: ColorUtils.grey[600]),
           SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -324,19 +325,19 @@ class ReservationCardView extends StatelessWidget {
   Widget _buildGuestCount(IconData icon, String label, int count) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: Colors.indigo),
+        Icon(icon, size: 20, color: ColorUtils.indigo),
         SizedBox(height: 4),
         Text(
           "$count",
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
-        Text(label, style: TextStyle(fontSize: 13, color: Colors.grey)),
+        Text(label, style: TextStyle(fontSize: 13, color: ColorUtils.grey)),
       ],
     );
   }
 
   Widget _buildPriceRow(String label, double value,
-      {bool isBold = false, Color color = Colors.black, String? strValue}) {
+      {bool isBold = false, Color color = ColorUtils.black, String? strValue}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -365,7 +366,7 @@ class ReservationCardView extends StatelessWidget {
       middleText: StringUtils.deleteReservationMessage,
       textConfirm: StringUtils.yes,
       textCancel: StringUtils.no,
-      confirmTextColor: Colors.white,
+      confirmTextColor: ColorUtils.white,
       onConfirm: () async {
         await ReservationController.to.deleteReservation(reservationId);
         Get.back();

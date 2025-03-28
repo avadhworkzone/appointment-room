@@ -2,6 +2,7 @@
 
 import 'dart:developer';
 
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,7 +44,7 @@ class _UserScreenState extends State<UserScreen> {
       Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ColorUtils.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: SingleChildScrollView(
@@ -159,7 +160,7 @@ class _UserScreenState extends State<UserScreen> {
       middleText: StringUtils.deleteUserMessage,
       textConfirm: StringUtils.delete,
       textCancel: StringUtils.cancel,
-      confirmTextColor: Colors.white,
+      confirmTextColor: ColorUtils.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
         await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
@@ -197,8 +198,8 @@ class _UserScreenState extends State<UserScreen> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => showUserDialog(user: user)),
-                        IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => confirmDelete(user.id!)),
+                        IconButton(icon: Icon(Icons.edit, color: ColorUtils.blue), onPressed: () => showUserDialog(user: user)),
+                        IconButton(icon: Icon(Icons.delete, color: ColorUtils.red), onPressed: () => confirmDelete(user.id!)),
                       ],
                     ),
                   ),

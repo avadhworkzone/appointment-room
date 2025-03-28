@@ -1,4 +1,5 @@
 
+import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _RoomScreenState extends State<RoomScreen> {
       middleText: StringUtils.deleteRoomMessage,
       textConfirm: StringUtils.delete,
       textCancel: StringUtils.cancel,
-      confirmTextColor: Colors.white,
+      confirmTextColor: ColorUtils.white,
       onConfirm: () async {
         isProcessing.value = true; // ✅ Prevent multiple clicks
         await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
@@ -70,10 +71,10 @@ class _RoomScreenState extends State<RoomScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                  icon: Icon(Icons.edit, color: Colors.blue),
+                                  icon: Icon(Icons.edit, color: ColorUtils.blue),
                                   onPressed: () => addEditRoomBottomSheet(room: room)),
                               IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  icon: Icon(Icons.delete, color: ColorUtils.red),
                                   onPressed: () => confirmDelete(room.id!)),
                             ],
                           ),
