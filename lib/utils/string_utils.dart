@@ -93,6 +93,8 @@ class StringUtils {
   static const logout = 'Logout';
   static const downloadDB = 'Download DB';
   static const report = 'Report';
+  static const salesReport = 'Sales Report';
+  static const transactionReport = 'Transaction Report';
 
   static const allData = 'All Data';
 

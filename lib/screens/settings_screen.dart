@@ -1,6 +1,7 @@
 // ignore_for_file: use_key_in_widget_constructors
 
-import 'package:cal_room/screens/report_screen.dart';
+import 'package:cal_room/screens/sales_report_screen.dart';
+import 'package:cal_room/screens/transaction_report.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
@@ -118,10 +119,17 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.insert_drive_file_outlined, color: ColorUtils.blue),
-                  title: Text(StringUtils.report),
+                  leading: Icon(Icons.history, color: ColorUtils.blue),
+                  title: Text(StringUtils.salesReport),
                   onTap: () async{
                     Get.to(()=>ReportScreen());
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.payment, color: ColorUtils.blue),
+                  title: Text(StringUtils.transactionReport),
+                  onTap: () async{
+                    Get.to(()=>TransactionScreen());
                   },
                 ),
                 ListTile(

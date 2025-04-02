@@ -513,8 +513,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                               (e) => e.roomName,
                             )
                             .toList()
-                            .join(",") ??
-                        "";
+                            .join(",");
                     onTap();
                   },
                   child: Text(StringUtils.ok)),

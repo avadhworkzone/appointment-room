@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages, prefer_const_constructors_in_immutables
+// ignore_for_file: depend_on_referenced_packages, prefer_const_constructors_in_immutables, sort_child_properties_last
 
 import 'dart:developer';
 

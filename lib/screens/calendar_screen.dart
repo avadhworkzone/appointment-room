@@ -1,8 +1,5 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, avoid_function_literals_in_foreach_calls
 
-import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:cal_room/controller/room_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
@@ -549,7 +546,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     if (date != null) {
       chosenDateTime = date;
-      print(chosenDateTime);
     }
   }
 
@@ -568,7 +564,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     mode: CupertinoDatePickerMode.monthYear,
                     onDateTimeChanged: (value) {
                       chosenDateTime = value;
-                      print(chosenDateTime);
                     },
                     initialDateTime: DateTime.now(),
                     minimumYear: DateTime.now().year - 50,
@@ -587,7 +582,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           child: Text("CANCEL")),
                       TextButton(
                           onPressed: () {
-                            print("chosenDateTime==> $chosenDateTime");
                             Get.back();
                             selectedMonth = chosenDateTime;
                             calenderCenterDate = chosenDateTime;

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable, invalid_use_of_protected_member
+
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
@@ -38,7 +40,7 @@ class SearchReservation extends StatelessWidget {
                 child: TextField(
                   onChanged: (value) {
                     searchStr.value = value;
-                  },
+                  },style: TextStyle(color: ColorUtils.white),cursorColor: ColorUtils.white,
                   decoration: InputDecoration(border: InputBorder.none),
                 ),
               ),
@@ -48,7 +50,7 @@ class SearchReservation extends StatelessWidget {
       ),
       body: Obx(() {
         if (searchStr.isEmpty) {
-          return SizedBox();
+          return Center(child: Text('No Data available'));
         }
         final reservationList = reservationController.reservationList.value
             .where(

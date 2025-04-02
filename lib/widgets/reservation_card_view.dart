@@ -174,6 +174,7 @@
 // }
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
+import 'package:cal_room/screens/reservation_detail_screen.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
@@ -196,120 +197,125 @@ class ReservationCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// 🔹 Header with Name and Actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    reservation.fullname,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                canEditDelete == false
-                    ? SizedBox()
-                    : Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit, color: ColorUtils.blue),
-                            onPressed: () => addEditReservationBottomSheet(
-                                reservation: reservation),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: ColorUtils.red),
-                            onPressed: () async {
-                              await _deleteReservation(reservation.id!);
-                              await ReservationController.to
-                                  .fetchReservations();
-                            },
-                          ),
-                        ],
+    return InkWell(
+      onTap: () {
+        Get.to(()=>ReservationDetailScreen(reservation: reservation));
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 3,
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// 🔹 Header with Name and Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      reservation.fullname,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
                       ),
-              ],
-            ),
-            SizedBox(height: 6),
-
-            /// 🔹 Check-in / Check-out and Contact Info
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoRow(Icons.calendar_today,
-                          "Check-in: ${reservation.checkin}"),
-                      _buildInfoRow(Icons.calendar_today_outlined,
-                          "Check-out: ${reservation.checkout}"),
-                    ],
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoRow(Icons.phone, reservation.phone),
-                      _buildInfoRow(Icons.email, reservation.email),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-
-            /// 🔹 Guest Count
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildGuestCount(
-                    Icons.person, StringUtils.adults, reservation.adult),
-                _buildGuestCount(
-                    Icons.child_care, StringUtils.children, reservation.child),
-                _buildGuestCount(Icons.pets, StringUtils.pets, reservation.pet),
-              ],
-            ),
-
-            /// 🔹 Divider & Pricing
-            if (!isFromToday) ...[
-              Divider(thickness: 1, height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPriceRow(StringUtils.room, 0,
-                        strValue:
-                            reservation.rooms.map((e) => e.roomName).toList().join(',')),
-                    _buildPriceRow(
-                        StringUtils.rateNight, reservation.ratePerNight),
-                    _buildPriceRow(StringUtils.subtotal, reservation.subtotal),
-                    _buildPriceRow(StringUtils.tax, reservation.tax),
-                    _buildPriceRow(StringUtils.discount, reservation.discount),
-                    _buildPriceRow(
-                        StringUtils.grandTotal, reservation.grandTotal,
-                        isBold: true),
-                    _buildPriceRow(
-                        StringUtils.prepayment, reservation.prepayment),
-                    _buildPriceRow(StringUtils.balance, reservation.balance,
-                        isBold: true, color: ColorUtils.red),
-                  ],
-                ),
+                  canEditDelete == false
+                      ? SizedBox()
+                      : Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit, color: ColorUtils.blue),
+                              onPressed: () => addEditReservationBottomSheet(
+                                  reservation: reservation),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: ColorUtils.red),
+                              onPressed: () async {
+                                await _deleteReservation(reservation.id!);
+                                await ReservationController.to
+                                    .fetchReservations();
+                              },
+                            ),
+                          ],
+                        ),
+                ],
               ),
-            ]
-          ],
+              SizedBox(height: 6),
+
+              /// 🔹 Check-in / Check-out and Contact Info
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow(Icons.calendar_today,
+                            "Check-in: ${reservation.checkin}"),
+                        _buildInfoRow(Icons.calendar_today_outlined,
+                            "Check-out: ${reservation.checkout}"),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow(Icons.phone, reservation.phone),
+                        _buildInfoRow(Icons.email, reservation.email),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+
+              /// 🔹 Guest Count
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildGuestCount(
+                      Icons.person, StringUtils.adults, reservation.adult),
+                  _buildGuestCount(
+                      Icons.child_care, StringUtils.children, reservation.child),
+                  _buildGuestCount(Icons.pets, StringUtils.pets, reservation.pet),
+                ],
+              ),
+
+              /// 🔹 Divider & Pricing
+              if (!isFromToday) ...[
+                Divider(thickness: 1, height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPriceRow(StringUtils.room, 0,
+                          strValue:
+                              reservation.rooms.map((e) => e.roomName).toList().join(',')),
+                      _buildPriceRow(
+                          StringUtils.rateNight, reservation.ratePerNight),
+                      _buildPriceRow(StringUtils.subtotal, reservation.subtotal),
+                      _buildPriceRow(StringUtils.tax, reservation.tax),
+                      _buildPriceRow(StringUtils.discount, reservation.discount),
+                      _buildPriceRow(
+                          StringUtils.grandTotal, reservation.grandTotal,
+                          isBold: true),
+                      _buildPriceRow(
+                          StringUtils.prepayment, reservation.prepayment),
+                      _buildPriceRow(StringUtils.balance, reservation.balance,
+                          isBold: true, color: ColorUtils.red),
+                    ],
+                  ),
+                ),
+              ]
+            ],
+          ),
         ),
       ),
     );

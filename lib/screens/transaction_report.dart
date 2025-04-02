@@ -1,0 +1,237 @@
+// ignore_for_file: invalid_use_of_protected_member, unnecessary_to_list_in_spreads
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:cal_room/controller/reservation_controller.dart';
+import 'package:cal_room/utils/color_utils.dart';
+
+class TransactionScreen extends StatefulWidget {
+  const TransactionScreen({super.key});
+
+  @override
+  State<TransactionScreen> createState() => _TransactionScreenState();
+}
+
+class _TransactionScreenState extends State<TransactionScreen> {
+  TextEditingController filterController = TextEditingController();
+  final List<String> filterList = ["Daily", "Monthly", "Yearly"];
+  String selectedFilter = "Daily";
+
+  @override
+  void initState() {
+    super.initState();
+    filterController.text = selectedFilter;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Transaction Report"),
+        centerTitle: true,
+        backgroundColor: ColorUtils.blue,
+        elevation: 4,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () => showFilterDialog(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      filterController.text,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                    const Icon(Icons.arrow_drop_down,color: Colors.grey,),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Obx(() {
+                final reservationList = ReservationController.to.reservationList.value;
+                final groupedTransactions = groupTransactions(reservationList);
+
+                // Flatten all transactions into a single list
+                // final allTransactions = groupedTransactions.values.expand((e) => e).toList();
+                // final totalAmount = allTransactions.fold<double>(
+                //   0,
+                //       (sum, item) => sum + (item['amount'] as double),
+                // );
+
+                if (groupedTransactions.isEmpty) {
+                  return const Center(child: Text("No transactions found."));
+                }
+
+                return ListView(
+                  children: [
+
+
+                    ...groupedTransactions.entries.map((entry) {
+                      final groupTotal = entry.value.fold<double>(
+                        0,
+                            (sum, item) => sum + (item['amount'] as double),
+                      );
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (selectedFilter != 'Daily') ...[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    entry.key,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: ColorUtils.blue,
+                                    ),
+                                  ),
+                                  Text(
+                                    "\$ ${groupTotal.toStringAsFixed(2)}",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                            ...entry.value.map((item) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item['guest'],
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                        ),
+                                        Text(
+                                          "\$ ${item['amount'].toStringAsFixed(2)}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.green[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item['date'],
+                                      style: const TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+
+                  ],
+                );
+              }),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  void showFilterDialog() {
+    String tempFilter = selectedFilter;
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Select Filter"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: filterList.map((filter) {
+            return RadioListTile(
+              title: Text(filter),
+              value: filter,
+              groupValue: tempFilter,
+              onChanged: (value) {
+                setState(() {
+                  selectedFilter = value!;
+                  filterController.text = value;
+                  Get.back();
+                });
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Map<String, List<Map<String, dynamic>>> groupTransactions(List reservationList) {
+    Map<String, List<Map<String, dynamic>>> grouped = {};
+
+    for (var item in reservationList) {
+      final checkoutDate = DateFormat("yyyy-MM-dd").parse(item.checkout);
+      String groupKey = "";
+
+      if (selectedFilter == "Daily") {
+        groupKey = DateFormat("dd MMM yyyy").format(checkoutDate);
+      } else if (selectedFilter == "Monthly") {
+        groupKey = DateFormat("MMMM yyyy").format(checkoutDate);
+      } else if (selectedFilter == "Yearly") {
+        groupKey = DateFormat("yyyy").format(checkoutDate);
+      }
+
+      if (!grouped.containsKey(groupKey)) {
+        grouped[groupKey] = [];
+      }
+
+      grouped[groupKey]!.add({
+        "date": DateFormat("dd MMM yyyy").format(checkoutDate),
+        "amount": (item.grandTotal as num).toDouble(),
+        "guest": item.fullname ?? "Guest", // Make sure `fullName` exists in your model
+      });
+    }
+
+    return grouped;
+  }
+}
