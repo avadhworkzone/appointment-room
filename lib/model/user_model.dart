@@ -1,22 +1,28 @@
 class UserModel {
   int? id;
   String? userId;
-  String mobileNumber;
+  String? mobileNumber;
   String fullname;
+  String password;
+  String role;
 
   UserModel({
     this.id,this.userId,
-    required this.mobileNumber,
+     this.mobileNumber,
     required this.fullname,
+    required this.password,
+    required this.role,
   });
 
   // Convert a UserModel to a Map
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'mobileNumber': mobileNumber,
-      'userId':userId,
+      'id': id??0,
       'fullname': fullname,
+      'userId':userId??"",
+      'mobileNumber': mobileNumber??"",
+      'password': password,
+      'role': role,
     };
   }
 
@@ -27,6 +33,8 @@ class UserModel {
       userId: map['userId'],
       mobileNumber:map['mobileNumber'],
       fullname: map['fullname'],
+      password: map['password'],
+      role: map['role'],
     );
   }
 }

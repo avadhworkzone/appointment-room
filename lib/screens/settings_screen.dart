@@ -1,5 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:cal_room/screens/report_screen.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
@@ -114,6 +115,13 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () async{
                     await DownloadDBFile.downloadDBFile();
 
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.insert_drive_file_outlined, color: ColorUtils.blue),
+                  title: Text(StringUtils.report),
+                  onTap: () async{
+                    Get.to(()=>ReportScreen());
                   },
                 ),
                 ListTile(

@@ -32,7 +32,9 @@ class DBHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         fullname TEXT NOT NULL,
         userId TEXT NOT NULL,
-        mobileNumber TEXT NOT NULL
+        mobileNumber TEXT NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL
       );
     ''');
 
@@ -65,6 +67,7 @@ class DBHelper {
   phone TEXT NOT NULL,
   email TEXT NOT NULL,
   roomName TEXT NOT NULL,
+  rooms TEXT NOT NULL,
   adult INTEGER NOT NULL,
   child INTEGER NOT NULL,
   roomId INTEGER NOT NULL,

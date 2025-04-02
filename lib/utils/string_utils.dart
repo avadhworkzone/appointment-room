@@ -52,6 +52,7 @@ class StringUtils {
   static const custom = 'Custom';
 
   static const noReservationsFound = 'No reservations found for selected filter.';
+  static const noReservationsFound2 = 'No reservations found.';
 
   /// User screen
   static const users = 'Users';
@@ -63,8 +64,10 @@ class StringUtils {
 
   static const fullName = 'Full Name';
   static const mobileNumber = 'Mobile Number';
+  static const role = 'Role';
   static const enterName = 'Enter name';
   static const enterMobileNumber = 'Enter mobile number';
+  static const required = 'Required';
   static const invalidPhoneNumber = 'Phone number must be 10 digits';
   static const validPhoneWarning = 'Enter a valid 10-digit mobile number';
   static const error = 'Error';
@@ -89,6 +92,7 @@ class StringUtils {
 
   static const logout = 'Logout';
   static const downloadDB = 'Download DB';
+  static const report = 'Report';
 
   static const allData = 'All Data';
 

@@ -49,6 +49,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
   DateTime? checkinDate;
   DateTime? checkoutDate;
   RoomModel? selectedRoom;
+  List<RoomModel> selectedRoomsList = [];
 
   var adultCount = 1.obs;
   var childCount = 0.obs;
@@ -66,11 +67,17 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
   }
 
   void init() {
-    roomController.text = widget.reservation?.roomName ?? "";
     reservation = widget.reservation;
 
     /// ✅ **Pre-fill data when editing a reservation**
     if (reservation != null) {
+      roomController.text = widget.reservation?.rooms
+              .map(
+                (e) => e.roomName,
+              )
+              .toList()
+              .join(",") ??
+          "";
       checkinController.text = reservation!.checkin;
       checkoutController.text = reservation!.checkout;
       fullnameController.text = reservation!.fullname;
@@ -82,6 +89,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
       adultCount.value = reservation!.adult;
       childCount.value = reservation!.child;
       petCount.value = reservation!.pet;
+      selectedRoomsList = reservation!.rooms;
       selectedRoom = RoomModel(
           roomName: reservation!.roomName,
           roomDesc: "",
@@ -193,61 +201,10 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                     padding: EdgeInsets.only(bottom: 8),
                     child: TextFormField(
                       onTap: () {
-                        RoomModel? selectedDialogRoom = selectedRoom;
-                        Get.dialog(
-                          StatefulBuilder(
-                            builder: (context, dialogSetState) {
-                              return AlertDialog(
-                                insetPadding: EdgeInsets.zero,
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(StringUtils.room),
-                                content: SizedBox(
-                                  width: Get.width - 60,
-                                  child: SingleChildScrollView(
-                                    physics: ClampingScrollPhysics(),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: RoomController.to.roomList.value
-                                          .map((e) => ListTile(
-                                                onTap: () {
-                                                  dialogSetState(() {
-                                                    selectedDialogRoom = e;
-                                                  });
-                                                },
-                                                leading: Icon(
-                                                    selectedDialogRoom?.id == e.id
-                                                        ? Icons
-                                                            .radio_button_checked
-                                                        : Icons.radio_button_off),
-                                                title: Text(e.roomName),
-                                              ))
-                                          .toList(),
-                                    ),
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Get.back();
-                                      },
-                                      child: Text(StringUtils.cancelCapital)),
-                                  TextButton(
-                                      onPressed: () {
-                                        if (selectedDialogRoom != null) {
-                                          bottomSetState(() {
-                                            selectedRoom = selectedDialogRoom;
-                                            roomController.text =
-                                                selectedDialogRoom?.roomName ??
-                                                    "";
-                                            Get.back();
-                                          });
-                                        }
-                                      },
-                                      child: Text(StringUtils.ok)),
-                                ],
-                              );
-                            },
-                          ),
+                        roomDialog(
+                          () {
+                            bottomSetState(() {});
+                          },
                         );
                       },
                       readOnly: true,
@@ -280,7 +237,8 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                     emailController,
                     StringUtils.email,
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) => value!.isEmpty ? StringUtils.enterEmail : null,
+                    validator: (value) =>
+                        value!.isEmpty ? StringUtils.enterEmail : null,
                   ),
                   SizedBox(height: 10),
                   Row(
@@ -316,7 +274,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                     StringUtils.ratePerNight,
                     keyboardType: TextInputType.number,
                     validator: (value) =>
-                        value!.isEmpty ?  StringUtils.enterRatePerNight : null,
+                        value!.isEmpty ? StringUtils.enterRatePerNight : null,
                   ),
                   _buildTextField(
                     discountController,
@@ -335,9 +293,11 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                   SizedBox(height: 10),
                   Obx(() => Column(
                         children: [
-                          _buildSummaryRow(StringUtils.subtotal, subtotal.value),
+                          _buildSummaryRow(
+                              StringUtils.subtotal, subtotal.value),
                           _buildSummaryRow(StringUtils.tax, tax.value),
-                          _buildSummaryRow(StringUtils.grandTotal, grandTotal.value,
+                          _buildSummaryRow(
+                              StringUtils.grandTotal, grandTotal.value,
                               isBold: true),
                           _buildSummaryRow(StringUtils.balance, balance.value,
                               isBold: true, color: ColorUtils.red),
@@ -345,23 +305,26 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                       )),
                   SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: isLoading?null:() async {
-                      if (formKey.currentState!.validate()) {
-                        final checkIn = DateTime.parse(checkinController.text);
-                        final checkOut =
-                            DateTime.parse(checkoutController.text);
-                        if (checkIn.isAtSameMomentAs(checkOut)) {
-                          Get.snackbar(
-                            StringUtils.attention,
-                            StringUtils.dateError,
-                            backgroundColor: ColorUtils.blue,
-                          );
-                          return;
-                        }
-                        final isContain = ReservationController
-                            .to.reservationList.value
-                            .any((element) {
-                       /*   print(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            if (formKey.currentState!.validate()) {
+                              final checkIn =
+                                  DateTime.parse(checkinController.text);
+                              final checkOut =
+                                  DateTime.parse(checkoutController.text);
+                              if (checkIn.isAtSameMomentAs(checkOut)) {
+                                Get.snackbar(
+                                  StringUtils.attention,
+                                  StringUtils.dateError,
+                                  backgroundColor: ColorUtils.blue,
+                                );
+                                return;
+                              }
+                              final isContain = ReservationController
+                                  .to.reservationList.value
+                                  .any((element) {
+                                /*   print(
                               'ID :=>${element.roomId} SEL :=> ${selectedRoom?.id} CHE IN :=> ${element.checkin} CHE OU :=> ${element.checkout}');
                           if (((checkIn.isAfter(DateTime.parse(element.checkin)) || checkIn.isAtSameMomentAs(DateTime.parse(element.checkin))) &&
                                   (checkOut.isBefore(DateTime.parse(element.checkout)) ||
@@ -395,89 +358,167 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                             print(
                                 "4 -------> ${element.checkin} O :=>${element.checkout}");
                           }*/
-                          return ((((checkIn.isAfter(DateTime.parse(element.checkin)) || checkIn.isAtSameMomentAs(DateTime.parse(element.checkin))) &&
-                                      (checkOut.isBefore(DateTime.parse(element.checkout)) ||
-                                          checkOut.isAtSameMomentAs(DateTime.parse(
-                                              element.checkout)))) ||
-                                  (checkOut.isAfter(DateTime.parse(element.checkin)) &&
-                                      (checkOut.isBefore(DateTime.parse(element.checkout)) ||
-                                          checkOut.isAtSameMomentAs(
-                                              DateTime.parse(
-                                                  element.checkout)))) ||
-                                  ((checkIn.isAfter(DateTime.parse(element.checkin)) ||
-                                      checkIn.isAtSameMomentAs(
-                                          DateTime.parse(element.checkin))) &&
-                                      checkIn.isBefore(
-                                          DateTime.parse(element.checkout))) ||
-                                  (DateTime.parse(element.checkin)
-                                          .isAfter(checkIn) &&
-                                      DateTime.parse(element.checkout)
-                                          .isBefore(checkOut))) &&
-                              element.roomId == selectedRoom?.id &&
-                              reservation?.id != element.id);
-                        });
-                        if (isContain) {
-                          Get.snackbar(
-                            StringUtils.attention,
-                            StringUtils.overlapDateError,
-                            backgroundColor: ColorUtils.blue,
-                          );
-                          return;
-                        }
-                        setState(() => isLoading = true);
+                                return ((((checkIn.isAfter(DateTime.parse(element.checkin)) || checkIn.isAtSameMomentAs(DateTime.parse(element.checkin))) &&
+                                            (checkOut.isBefore(DateTime.parse(element.checkout)) ||
+                                                checkOut.isAtSameMomentAs(
+                                                    DateTime.parse(
+                                                        element.checkout)))) ||
+                                        (checkOut.isAfter(DateTime.parse(element.checkin)) &&
+                                            (checkOut.isBefore(DateTime.parse(element.checkout)) ||
+                                                checkOut.isAtSameMomentAs(
+                                                    DateTime.parse(
+                                                        element.checkout)))) ||
+                                        ((checkIn.isAfter(DateTime.parse(element.checkin)) ||
+                                                checkIn.isAtSameMomentAs(
+                                                    DateTime.parse(element.checkin))) &&
+                                            checkIn.isBefore(DateTime.parse(element.checkout))) ||
+                                        (DateTime.parse(element.checkin).isAfter(checkIn) && DateTime.parse(element.checkout).isBefore(checkOut))) &&
+                                    // element.roomId == selectedRoom?.id &&
+                                    element.rooms
+                                        .where(
+                                          (e1) => selectedRoomsList.any(
+                                            (e2) => e2.id == e1.id,
+                                          ),
+                                        )
+                                        .toList()
+                                        .isNotEmpty &&
+                                    reservation?.id != element.id);
+                              });
+                              if (isContain) {
+                                Get.snackbar(
+                                  StringUtils.attention,
+                                  StringUtils.overlapDateError,
+                                  backgroundColor: ColorUtils.blue,
+                                );
+                                return;
+                              }
+                              setState(() => isLoading = true);
 
-                        ReservationModel newReservation = ReservationModel(
-                          userId: 1,
-                          // Replace with actual user ID logic
-                          checkin: checkinController.text,
-                          checkout: checkoutController.text,
-                          fullname: fullnameController.text,
-                          phone: phoneController.text,
-                          email: emailController.text,
-                          adult: adultCount.value,
-                          child: childCount.value,
-                          pet: petCount.value,
-                          ratePerNight: double.parse(rateController.text),
-                          subtotal: subtotal.value,
-                          discount: double.parse(discountController.text),
-                          tax: tax.value,
-                          grandTotal: grandTotal.value,
-                          prepayment: double.parse(prepaymentController.text),
-                          balance: balance.value,
-                          roomId: selectedRoom?.id ?? 0,
-                          roomName: selectedRoom?.roomName ?? "",
-                        );
+                              ReservationModel newReservation =
+                                  ReservationModel(
+                                      userId: 1,
+                                      // Replace with actual user ID logic
+                                      checkin: checkinController.text,
+                                      checkout: checkoutController.text,
+                                      fullname: fullnameController.text,
+                                      phone: phoneController.text,
+                                      email: emailController.text,
+                                      adult: adultCount.value,
+                                      child: childCount.value,
+                                      pet: petCount.value,
+                                      ratePerNight:
+                                          double.parse(rateController.text),
+                                      subtotal: subtotal.value,
+                                      discount:
+                                          double.parse(discountController.text),
+                                      tax: tax.value,
+                                      grandTotal: grandTotal.value,
+                                      prepayment: double.parse(
+                                          prepaymentController.text),
+                                      balance: balance.value,
+                                      roomId: selectedRoom?.id ?? 0,
+                                      roomName: selectedRoom?.roomName ?? "",
+                                      rooms: selectedRoomsList);
 
-                        if (reservation == null) {
-                          await reservationController
-                              .addReservation(newReservation);
-                        } else {
-                          newReservation.id = reservation?.id ?? 0;
-                          await reservationController
-                              .updateReservation(newReservation);
-                        }
-                        setState(() => isLoading = false);
+                              if (reservation == null) {
+                                await reservationController
+                                    .addReservation(newReservation);
+                              } else {
+                                newReservation.id = reservation?.id ?? 0;
+                                await reservationController
+                                    .updateReservation(newReservation);
+                              }
+                              setState(() => isLoading = false);
 
-                        Get.back(result: newReservation);
-                        await reservationController.fetchReservations();
-                      }
-                    },
+                              Get.back(result: newReservation);
+                              await reservationController.fetchReservations();
+                            }
+                          },
                     child: isLoading
                         ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: ColorUtils.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                        :Text(reservation == null
-                        ? StringUtils.addReservation
-                        : StringUtils.updateReservation),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: ColorUtils.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(reservation == null
+                            ? StringUtils.addReservation
+                            : StringUtils.updateReservation),
                   ),
                 ],
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  void roomDialog(VoidCallback onTap) {
+    List<RoomModel> selectedDialogRoom = selectedRoomsList;
+    Get.dialog(
+      StatefulBuilder(
+        builder: (context, dialogSetState) {
+          return AlertDialog(
+            insetPadding: EdgeInsets.zero,
+            contentPadding: EdgeInsets.zero,
+            title: Text(StringUtils.room),
+            content: SizedBox(
+              width: Get.width - 60,
+              child: SingleChildScrollView(
+                physics: ClampingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: RoomController.to.roomList.value
+                      .map((e) => ListTile(
+                            onTap: () {
+                              final roomIndex = selectedDialogRoom.indexWhere(
+                                (element) => element.id == e.id,
+                              );
+                              if (roomIndex > -1) {
+                                dialogSetState(() {
+                                  selectedDialogRoom.removeAt(roomIndex);
+                                });
+                              } else {
+                                dialogSetState(() {
+                                  selectedDialogRoom.add(e);
+                                });
+                              }
+                            },
+                            leading: Icon(selectedDialogRoom.any(
+                              (element) => element.id == e.id,
+                            )
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off),
+                            title: Text(e.roomName),
+                          ))
+                      .toList(),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: Text(StringUtils.cancelCapital)),
+              TextButton(
+                  onPressed: () {
+                    selectedRoomsList = selectedDialogRoom;
+                    Get.back();
+                    roomController.text = selectedRoomsList
+                            .map(
+                              (e) => e.roomName,
+                            )
+                            .toList()
+                            .join(",") ??
+                        "";
+                    onTap();
+                  },
+                  child: Text(StringUtils.ok)),
+            ],
           );
         },
       ),

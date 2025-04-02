@@ -219,22 +219,25 @@ class ReservationCardView extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                canEditDelete==false?SizedBox():   Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: ColorUtils.blue),
-                      onPressed: () => addEditReservationBottomSheet(
-                          reservation: reservation),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: ColorUtils.red),
-                      onPressed: () async {
-                        await _deleteReservation(reservation.id!);
-                        await ReservationController.to.fetchReservations();
-                      },
-                    ),
-                  ],
-                ),
+                canEditDelete == false
+                    ? SizedBox()
+                    : Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: ColorUtils.blue),
+                            onPressed: () => addEditReservationBottomSheet(
+                                reservation: reservation),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: ColorUtils.red),
+                            onPressed: () async {
+                              await _deleteReservation(reservation.id!);
+                              await ReservationController.to
+                                  .fetchReservations();
+                            },
+                          ),
+                        ],
+                      ),
               ],
             ),
             SizedBox(height: 6),
@@ -246,8 +249,10 @@ class ReservationCardView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoRow(Icons.calendar_today, "Check-in: ${reservation.checkin}"),
-                      _buildInfoRow(Icons.calendar_today_outlined, "Check-out: ${reservation.checkout}"),
+                      _buildInfoRow(Icons.calendar_today,
+                          "Check-in: ${reservation.checkin}"),
+                      _buildInfoRow(Icons.calendar_today_outlined,
+                          "Check-out: ${reservation.checkout}"),
                     ],
                   ),
                 ),
@@ -269,8 +274,10 @@ class ReservationCardView extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildGuestCount(Icons.person, StringUtils.adults, reservation.adult),
-                _buildGuestCount(Icons.child_care, StringUtils.children, reservation.child),
+                _buildGuestCount(
+                    Icons.person, StringUtils.adults, reservation.adult),
+                _buildGuestCount(
+                    Icons.child_care, StringUtils.children, reservation.child),
                 _buildGuestCount(Icons.pets, StringUtils.pets, reservation.pet),
               ],
             ),
@@ -283,14 +290,19 @@ class ReservationCardView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildPriceRow(StringUtils.room, 0, strValue: reservation.roomName),
-                    _buildPriceRow(StringUtils.rateNight, reservation.ratePerNight),
+                    _buildPriceRow(StringUtils.room, 0,
+                        strValue:
+                            reservation.rooms.map((e) => e.roomName).toList().join(',')),
+                    _buildPriceRow(
+                        StringUtils.rateNight, reservation.ratePerNight),
                     _buildPriceRow(StringUtils.subtotal, reservation.subtotal),
                     _buildPriceRow(StringUtils.tax, reservation.tax),
                     _buildPriceRow(StringUtils.discount, reservation.discount),
-                    _buildPriceRow(StringUtils.grandTotal, reservation.grandTotal,
+                    _buildPriceRow(
+                        StringUtils.grandTotal, reservation.grandTotal,
                         isBold: true),
-                    _buildPriceRow(StringUtils.prepayment, reservation.prepayment),
+                    _buildPriceRow(
+                        StringUtils.prepayment, reservation.prepayment),
                     _buildPriceRow(StringUtils.balance, reservation.balance,
                         isBold: true, color: ColorUtils.red),
                   ],

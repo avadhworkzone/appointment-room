@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:cal_room/model/room_model.dart';
+
 class ReservationModel {
   int? id;
   int userId;
@@ -18,6 +22,7 @@ class ReservationModel {
   double balance;
   int roomId;
   String roomName;
+  List<RoomModel> rooms;
 
   ReservationModel({
     this.id,
@@ -39,6 +44,7 @@ class ReservationModel {
     required this.balance,
     required this.roomId,
     required this.roomName,
+    required this.rooms,
   });
 
   // Convert a ReservationModel to a Map
@@ -63,6 +69,11 @@ class ReservationModel {
       'balance': balance,
       'roomId': roomId,
       'roomName': roomName,
+      'rooms': jsonEncode(rooms
+          .map(
+            (e) => e.toMap(),
+          )
+          .toList()),
     };
   }
 
@@ -86,8 +97,15 @@ class ReservationModel {
       grandTotal: map['grandtotal'],
       prepayment: map['prepayment'],
       balance: map['balance'],
-      roomId: map['roomId']??0,
-      roomName: map['roomName']??"",
+      roomId: map['roomId'] ?? 0,
+      roomName: map['roomName'] ?? "",
+      rooms: map['rooms'] != null && map['rooms'] != "" && map['rooms'] != "null"
+          ? (jsonDecode(map['rooms']) as List).cast<Map<String,dynamic>>()
+              .map(
+                (e) => RoomModel.fromMap(e),
+              )
+              .toList()
+          : [],
     );
   }
 }
