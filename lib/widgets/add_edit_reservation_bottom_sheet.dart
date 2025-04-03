@@ -473,28 +473,36 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: RoomController.to.roomList.value
                       .map((e) => ListTile(
-                            onTap: () {
-                              final roomIndex = selectedDialogRoom.indexWhere(
-                                (element) => element.id == e.id,
-                              );
-                              if (roomIndex > -1) {
-                                dialogSetState(() {
-                                  selectedDialogRoom.removeAt(roomIndex);
-                                });
-                              } else {
-                                dialogSetState(() {
-                                  selectedDialogRoom.add(e);
-                                });
-                              }
-                            },
-                            leading: Icon(selectedDialogRoom.any(
-                              (element) => element.id == e.id,
-                            )
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_off),
-                            title: Text(e.roomName),
-                          ))
-                      .toList(),
+                    onTap: () {
+                      final roomIndex = selectedDialogRoom.indexWhere(
+                            (element) => element.id == e.id,
+                      );
+                      if (roomIndex > -1) {
+                        dialogSetState(() {
+                          selectedDialogRoom.removeAt(roomIndex);
+                        });
+                      } else {
+                        dialogSetState(() {
+                          selectedDialogRoom.add(e);
+                        });
+                      }
+                    },
+                    leading: Checkbox(
+                      value: selectedDialogRoom.any((element) => element.id == e.id),
+                      onChanged: (bool? value) {
+                        dialogSetState(() {
+                          if (value == true) {
+                            selectedDialogRoom.add(e);
+                          } else {
+                            selectedDialogRoom.removeWhere((element) => element.id == e.id);
+                          }
+                        });
+                      },
+                    ),
+                    title: Text(e.roomName),
+                  ))
+                      .toList()
+
                 ),
               ),
             ),
