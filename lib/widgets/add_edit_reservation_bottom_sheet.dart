@@ -37,6 +37,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
 
   final ReservationController reservationController =
       Get.find<ReservationController>();
+  TextEditingController taxPercentController = TextEditingController();
   TextEditingController checkinController = TextEditingController();
   TextEditingController checkoutController = TextEditingController();
   TextEditingController fullnameController = TextEditingController();
@@ -89,6 +90,10 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
       adultCount.value = reservation!.adult;
       childCount.value = reservation!.child;
       petCount.value = reservation!.pet;
+      double taxPercentage = reservation!.subtotal != 0
+          ? (reservation!.tax / reservation!.subtotal) * 100
+          : 5.0;
+      taxPercentController.text = taxPercentage.toStringAsFixed(2);
       selectedRoomsList = reservation!.rooms;
       selectedRoom = RoomModel(
           roomName: reservation!.roomName,
@@ -97,6 +102,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
           id: reservation!.roomId);
       calculateTotal();
     } else {
+      taxPercentController.text = "5";
       rateController.text = "100"; // Default rate
       discountController.text = "0";
       prepaymentController.text = "0";
@@ -107,6 +113,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
     rateController.addListener(calculateTotal);
     discountController.addListener(calculateTotal);
     prepaymentController.addListener(calculateTotal);
+    taxPercentController.addListener(calculateTotal);
   }
 
   /// ✅ **Pick a date and validate it**
@@ -152,9 +159,11 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
     double rate = double.tryParse(rateController.text) ?? 0.0;
     double discount = double.tryParse(discountController.text) ?? 0.0;
     double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
-
+    double taxPercent = double.tryParse(taxPercentController.text) ?? 0.0;
     subtotal.value = rate;
-    tax.value = subtotal.value * 0.05; // 5% Tax
+    tax.value = subtotal.value * (taxPercent / 100);
+
+    // tax.value = subtotal.value * 0.05; // 5% Tax
     grandTotal.value = (subtotal.value - discount) + tax.value;
     balance.value = grandTotal.value - prepayment;
   }
@@ -290,7 +299,14 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                     validator: (value) =>
                         value!.isEmpty ? StringUtils.enterPrepayment : null,
                   ),
-                  SizedBox(height: 10),
+          _buildTextField(
+          taxPercentController,
+          "${StringUtils.tax} %",
+          keyboardType: TextInputType.number,
+          validator: (value) => value!.isEmpty ? "Enter tax percentage" : null,
+          ),
+
+          SizedBox(height: 10),
                   Obx(() => Column(
                         children: [
                           _buildSummaryRow(
@@ -428,9 +444,10 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
                                 await reservationController
                                     .updateReservation(newReservation);
                               }
-                              setState(() => isLoading = false);
-
                               Get.back(result: newReservation);
+                              if (mounted) {
+                                setState(() => isLoading = false);
+                              }
                               await reservationController.fetchReservations();
                             }
                           },
