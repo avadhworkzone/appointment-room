@@ -173,7 +173,7 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
     double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
     double taxPercent = double.tryParse(taxPercentController.text) ?? 0.0;
 
-    int numRooms = selectedRoomsList.length;
+    // int numRooms = selectedRoomsList.length;
     int nights = 1;
     if (checkinController.text.isNotEmpty &&
         checkoutController.text.isNotEmpty) {
@@ -183,7 +183,9 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
       if (nights < 1) nights = 1;
     }
 
-    double roomNightMultiplier = double.parse(numRooms.toString()) * double.parse(nights.toString());
+    double roomNightMultiplier =
+        // double.parse(numRooms.toString()) *
+        double.parse(nights.toString());
 
     subtotal.value = rate * roomNightMultiplier;
     discount = discount ;
