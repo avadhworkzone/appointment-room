@@ -34,7 +34,7 @@ class StringUtils {
   static const ratePerNight = 'Rate per Night';
   static const subtotal = 'Subtotal';
   static const tax = 'Tax (5%)';
-  static const discount = 'Discount';
+  static const discount = 'Discount \$';
   static const grandTotal = 'Grand Total';
   static const prepayment = 'Prepayment';
   static const balance = 'Balance';

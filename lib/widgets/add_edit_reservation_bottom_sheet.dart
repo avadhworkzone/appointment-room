@@ -155,15 +155,39 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
   }
 
   /// ✅ **Calculates Tax, Grand Total & Balance**
+  // void calculateTotal() {
+  //   double rate = double.tryParse(rateController.text) ?? 0.0;
+  //   double discount = double.tryParse(discountController.text) ?? 0.0;
+  //   double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
+  //   double taxPercent = double.tryParse(taxPercentController.text) ?? 0.0;
+  //   subtotal.value = rate;
+  //   tax.value = subtotal.value * (taxPercent / 100);
+  //
+  //   // tax.value = subtotal.value * 0.05; // 5% Tax
+  //   grandTotal.value = (subtotal.value - discount) + tax.value;
+  //   balance.value = grandTotal.value - prepayment;
+  // }
   void calculateTotal() {
     double rate = double.tryParse(rateController.text) ?? 0.0;
     double discount = double.tryParse(discountController.text) ?? 0.0;
     double prepayment = double.tryParse(prepaymentController.text) ?? 0.0;
     double taxPercent = double.tryParse(taxPercentController.text) ?? 0.0;
-    subtotal.value = rate;
-    tax.value = subtotal.value * (taxPercent / 100);
 
-    // tax.value = subtotal.value * 0.05; // 5% Tax
+    int numRooms = selectedRoomsList.length;
+    int nights = 1;
+    if (checkinController.text.isNotEmpty &&
+        checkoutController.text.isNotEmpty) {
+      DateTime checkIn = DateTime.tryParse(checkinController.text) ?? DateTime.now();
+      DateTime checkOut = DateTime.tryParse(checkoutController.text) ?? DateTime.now().add(Duration(days: 1));
+      nights = checkOut.difference(checkIn).inDays;
+      if (nights < 1) nights = 1;
+    }
+
+    double roomNightMultiplier = double.parse(numRooms.toString()) * double.parse(nights.toString());
+
+    subtotal.value = rate * roomNightMultiplier;
+    discount = discount ;
+    tax.value = subtotal.value * (taxPercent / 100);
     grandTotal.value = (subtotal.value - discount) + tax.value;
     balance.value = grandTotal.value - prepayment;
   }
