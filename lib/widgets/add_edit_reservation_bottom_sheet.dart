@@ -147,9 +147,12 @@ class _AddEditReservationWidgetState extends State<AddEditReservationWidget> {
           checkoutController.text =
               DateFormat('yyyy-MM-dd').format(checkoutDate!);
         }
+        calculateTotal();
       } else {
         checkoutDate = pickedDate;
         checkoutController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        calculateTotal();
+
       }
     }
   }
