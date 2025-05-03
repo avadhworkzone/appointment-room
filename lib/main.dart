@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: StringUtils.appTitle,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: ColorUtils.blue,
@@ -53,5 +54,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
