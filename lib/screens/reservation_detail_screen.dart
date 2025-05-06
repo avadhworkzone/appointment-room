@@ -1,18 +1,14 @@
 // ignore_for_file: must_be_immutable
-
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import '../controller/reservation_controller.dart';
 import '../model/reservation_model.dart';
-import 'package:get/get.dart';
-
 
 class ReservationDetailScreen extends StatefulWidget {
-   ReservationModel reservation;
+  ReservationModel reservation;
 
-   ReservationDetailScreen({super.key, required this.reservation});
+  ReservationDetailScreen({super.key, required this.reservation});
 
   @override
   State<ReservationDetailScreen> createState() =>
@@ -20,9 +16,6 @@ class ReservationDetailScreen extends StatefulWidget {
 }
 
 class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
-  final ReservationController reservationController =
-      Get.find<ReservationController>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,16 +52,16 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                     Icons.person, StringUtils.adults, widget.reservation.adult),
                 _buildGuestCount(Icons.child_care, StringUtils.children,
                     widget.reservation.child),
-                _buildGuestCount(Icons.pets, StringUtils.pets,
-                    widget.reservation.pet),  ],
+                _buildGuestCount(
+                    Icons.pets, StringUtils.pets, widget.reservation.pet),
+              ],
             ),
             Divider(thickness: 1, height: 24),
             _buildPriceRow(
                 StringUtils.ratePerNight, widget.reservation.ratePerNight),
             _buildPriceRow(StringUtils.subtotal, widget.reservation.subtotal),
             _buildPriceRow(StringUtils.tax, widget.reservation.tax),
-            _buildPriceRow(
-                StringUtils.discount, widget.reservation.discount),
+            _buildPriceRow(StringUtils.discount, widget.reservation.discount),
             _buildPriceRow(
               StringUtils.grandTotal,
               widget.reservation.grandTotal,
@@ -91,7 +84,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        Get.back();
+                        Navigator.pop(context);
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -117,13 +110,14 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                   Expanded(
                     child: InkWell(
                       onTap: () async {
-                      final result=await addEditReservationBottomSheet(
+                        final result = await addEditReservationBottomSheet(
+                            context,
                             reservation: widget.reservation);
-                      if(result!=null){
-                        setState(() {
-                          widget.reservation=result;
-                        });
-                      }
+                        if (result != null) {
+                          setState(() {
+                            widget.reservation = result;
+                          });
+                        }
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -137,7 +131,9 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
                             child: Text(
                               StringUtils.edit,
                               style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold,color: ColorUtils.white),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: ColorUtils.white),
                             ),
                           ),
                         ),

@@ -1,7 +1,10 @@
 // ignore_for_file: invalid_use_of_protected_member, unnecessary_to_list_in_spreads
 
+import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
+import 'package:cal_room/blocs/reservation/reservation__state.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:intl/intl.dart';
 import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/utils/color_utils.dart';
@@ -40,7 +43,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
             GestureDetector(
               onTap: () => showFilterDialog(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -57,123 +61,143 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   children: [
                     Text(
                       filterController.text,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-                    const Icon(Icons.arrow_drop_down,color: Colors.grey,),
+                    const Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.grey,
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: Obx(() {
-                final reservationList = ReservationController.to.reservationList.value;
-                final groupedTransactions = groupTransactions(reservationList);
+              child: BlocBuilder<ReservationBloc, ReservationState>(
+                builder: (context, state) {
+                  // Show loading indicator while fetching data
+                  if (state is ReservationLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                // Flatten all transactions into a single list
-                // final allTransactions = groupedTransactions.values.expand((e) => e).toList();
-                // final totalAmount = allTransactions.fold<double>(
-                //   0,
-                //       (sum, item) => sum + (item['amount'] as double),
-                // );
+                  // Show error message if there's an issue fetching the data
+                  if (state is ReservationError) {
+                    return Center(child: Text('Error: ${state.message}'));
+                  }
 
-                if (groupedTransactions.isEmpty) {
-                  return const Center(child: Text("No transactions found."));
-                }
+                  // If the reservations are loaded successfully
+                  if (state is ReservationLoaded) {
+                    final reservationList = state.reservations;
+                    final groupedTransactions =
+                        groupTransactions(reservationList);
 
-                return ListView(
-                  children: [
+                    if (groupedTransactions.isEmpty) {
+                      return const Center(
+                          child: Text("No transactions found."));
+                    }
 
-
-                    ...groupedTransactions.entries.map((entry) {
-                      final groupTotal = entry.value.fold<double>(
-                        0,
+                    return ListView(
+                      children: [
+                        ...groupedTransactions.entries.map((entry) {
+                          final groupTotal = entry.value.fold<double>(
+                            0,
                             (sum, item) => sum + (item['amount'] as double),
-                      );
+                          );
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (selectedFilter != 'Daily') ...[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: ColorUtils.blue,
-                                    ),
-                                  ),
-                                  Text(
-                                    "\$ ${groupTotal.toStringAsFixed(2)}",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                            ...entry.value.map((item) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          item['guest'],
-                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (selectedFilter != 'Daily') ...[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        entry.key,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: ColorUtils.blue,
                                         ),
+                                      ),
+                                      Text(
+                                        "\$ ${groupTotal.toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
+                                ...entry.value.map((item) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              item['guest'],
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
+                                            Text(
+                                              "\$ ${item['amount'].toStringAsFixed(2)}",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.green[700],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
                                         Text(
-                                          "\$ ${item['amount'].toStringAsFixed(2)}",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Colors.green[700],
-                                          ),
+                                          item['date'],
+                                          style: const TextStyle(
+                                              color: Colors.grey),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item['date'],
-                                      style: const TextStyle(color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    );
+                  }
 
-                  ],
-                );
-              }),
+                  // Default fallback if the state is not recognized
+                  return const Center(child: Text('No Reservations Found'));
+                },
+              ),
             ),
-
           ],
         ),
       ),
@@ -182,31 +206,35 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   void showFilterDialog() {
     String tempFilter = selectedFilter;
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Select Filter"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: filterList.map((filter) {
-            return RadioListTile(
-              title: Text(filter),
-              value: filter,
-              groupValue: tempFilter,
-              onChanged: (value) {
-                setState(() {
-                  selectedFilter = value!;
-                  filterController.text = value;
-                  Get.back();
-                });
-              },
-            );
-          }).toList(),
-        ),
-      ),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Select Filter"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: filterList.map((filter) {
+              return RadioListTile<String>(
+                title: Text(filter),
+                value: filter,
+                groupValue: tempFilter,
+                onChanged: (value) {
+                  setState(() {
+                    selectedFilter = value!;
+                    filterController.text = value;
+                    Navigator.pop(context); // Close the dialog
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 
-  Map<String, List<Map<String, dynamic>>> groupTransactions(List reservationList) {
+  Map<String, List<Map<String, dynamic>>> groupTransactions(
+      List reservationList) {
     Map<String, List<Map<String, dynamic>>> grouped = {};
 
     for (var item in reservationList) {
@@ -228,7 +256,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
       grouped[groupKey]!.add({
         "date": DateFormat("dd MMM yyyy").format(checkoutDate),
         "amount": (item.grandTotal as num).toDouble(),
-        "guest": item.fullname ?? "Guest", // Make sure `fullName` exists in your model
+        "guest": item.fullname ??
+            "Guest", // Make sure `fullName` exists in your model
       });
     }
 

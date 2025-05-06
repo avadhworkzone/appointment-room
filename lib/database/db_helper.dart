@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:developer';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -84,14 +83,14 @@ class DBHelper {
 
     ''');
   }
-  static Future<void> _upGradeDB(Database db,int oldVersion, int newVersion) async {
+
+  static Future<void> _upGradeDB(
+      Database db, int oldVersion, int newVersion) async {
     if (oldVersion < newVersion) {
       db.execute("ALTER TABLE Reservations ADD COLUMN roomId INTEGER;");
       db.execute("ALTER TABLE Reservations ADD COLUMN roomName TEXT;");
     }
-
   }
-
 
   static Future<List<Map<String, dynamic>>> getLoginUsers() async {
     final db = await database;
@@ -158,10 +157,12 @@ class DBHelper {
     return await db.query('Reservations');
   }
 
-  static Future<int> updateReservation(Map<String, dynamic> reservation, int id) async {
+  static Future<int> updateReservation(
+      Map<String, dynamic> reservation, int id) async {
     final db = await database;
     return await db.transaction((txn) async {
-      return await txn.update('Reservations', reservation, where: 'id = ?', whereArgs: [id]);
+      return await txn.update('Reservations', reservation,
+          where: 'id = ?', whereArgs: [id]);
     });
   }
 

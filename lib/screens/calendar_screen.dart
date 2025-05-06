@@ -1,7 +1,10 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_function_literals_in_foreach_calls
-
-
-import 'package:cal_room/controller/room_controller.dart';
+import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
+import 'package:cal_room/blocs/reservation/reservation__event.dart';
+import 'package:cal_room/blocs/reservation/reservation__state.dart';
+import 'package:cal_room/blocs/room/room_bloc.dart';
+import 'package:cal_room/blocs/room/room_event.dart';
+import 'package:cal_room/blocs/room/room_state.dart';
 import 'package:cal_room/model/reservation_model.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
@@ -10,10 +13,9 @@ import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';
 import 'package:cal_room/widgets/choose_add_calendar_bottom_sheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import '../controller/reservation_controller.dart';
 import '../widgets/common_method.dart';
 import 'reservation_detail_screen.dart';
 
@@ -25,12 +27,9 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final ReservationController reservationController = Get.find();
-
+  // final ReservationController reservationController = Get.find();
   // late Worker _reservationListener;
-
   bool isLoading = true;
-
   DateTime selectedMonth = DateTime.now();
   DateTime calenderCenterDate = DateTime.now();
   late ScrollController scrollController;
@@ -46,8 +45,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     setState(() => isLoading = true);
 
     // Await room and reservation data before building UI
-    await RoomController.to.fetchRooms();
-    await reservationController.fetchReservations();
+    context.read<ReservationBloc>().add(FetchReservationsEvent());
+    context.read<RoomBloc>().add(FetchRooms());
     // _loadEvents();
     //
     // _reservationListener = ever(reservationController.reservationList, (_) {
@@ -65,7 +64,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.dispose();
   }
 
-  void setCalenderDates({bool isFromInit=false}) {
+  void setCalenderDates({bool isFromInit = false}) {
     final now = calenderCenterDate;
     final oldDates =
         List.generate(120, (index) => now.subtract(Duration(days: index)));
@@ -78,7 +77,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     scrollController = ScrollController(
       initialScrollOffset: ((calenderDates.length ~/ 2) * 50) - 60,
     );
-    if(isFromInit) {
+    if (isFromInit) {
       listenScrollController();
     }
     setState(() {});
@@ -134,31 +133,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  // DateTime _parseDate(String dateString) {
-  //   try {
-  //     DateTime parsedDate = DateTime.parse(dateString);
-  //     return DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-  //   } catch (e) {
-  //     try {
-  //       DateTime parsedDate = DateFormat("dd-MM-yyyy").parse(dateString);
-  //       return DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-  //     } catch (e) {
-  //       log("Date parsing error: $e");
-  //       return DateTime.now();
-  //     }
-  //   }
-  // }
-
-  // void _loadEvents() {
-  //   if (!mounted) return;
-  //   _eventsMap.clear();
-  //   for (var res in reservationController.reservationList) {
-  //     DateTime parsedDate = _parseDate(res.checkin);
-  //     _eventsMap.update(parsedDate, (list) => list..add(res),
-  //         ifAbsent: () => [res]);
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,7 +150,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => chooseAddCalendarBottomSheet(),
+        onPressed: () => chooseAddCalendarBottomSheet(context),
         child: Icon(Icons.add),
       ),
       body: isLoading
@@ -209,317 +183,417 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: Column(
         children: [
           SizedBox(height: 10),
-          Obx(() {
-            List<ReservationModel> reservationList = [];
-            reservationController.reservationList.forEach(
-              (e1) {
-                Map<String, dynamic> map = e1.toMap();
-                e1.rooms.forEach(
-                  (e2) {
-                    map['roomId'] = e2.id;
-                    map['roomName'] = e2.roomName;
-                    reservationList.add(ReservationModel.fromMap(map));
+          BlocBuilder<ReservationBloc, ReservationState>(
+            builder: (context, state) {
+              if (state is ReservationLoading) {
+                return Center(child: CircularProgressIndicator());
+              } else if (state is ReservationError) {
+                return Center(child: Text('Error: ${state.message}'));
+              } else if (state is ReservationLoaded) {
+                List<ReservationModel> reservationList = [];
+                state.reservations.forEach(
+                  (e1) {
+                    Map<String, dynamic> map = e1.toMap();
+                    e1.rooms.forEach(
+                      (e2) {
+                        map['roomId'] = e2.id;
+                        map['roomName'] = e2.roomName;
+                        reservationList.add(ReservationModel.fromMap(map));
+                      },
+                    );
                   },
                 );
-              },
-            );
-            return SizedBox(
-              width: Get.width,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// Sidebar with Month + Room Names
-                  SizedBox(
-                    width: 130,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: onDateTap,
-                          child: SizedBox(
-                            height: 50,
-                            child: Column(
-                              children: [
-                                Text("${selectedMonth.year}",
-                                    style: TextStyle(fontSize: 18)),
-                                Text(DateFormat('MMM').format(selectedMonth)),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Column(
-                          children: RoomController.to.roomList.map((e) {
-                            return GestureDetector(
-                              onTap: () {
-                                Get.bottomSheet(Container(
-                                  padding: EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: ColorUtils.white,
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(16)),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(StringUtils.rooms),
-                                      ListTile(
-                                        title: Text(e.roomName,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold)),
-                                        // subtitle: Text("Room ID: ${room.id}\n${room.roomDesc}"),
-                                        subtitle: Text(e.roomDesc),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                                icon: Icon(Icons.edit,
-                                                    color: ColorUtils.blue),
-                                                onPressed: () {
-                                                  Get.back();
-                                                  addEditRoomBottomSheet(
-                                                      room: e);
-                                                }),
-                                            IconButton(
-                                                icon: Icon(Icons.delete,
-                                                    color: ColorUtils.red),
-                                                onPressed: () {
-                                                  Get.back();
-                                                  confirmDelete(e.id!);
-                                                }),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ));
-                              },
-                              child: Container(
+
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Sidebar with Month + Room Names
+                      SizedBox(
+                        width: 130,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: onDateTap,
+                              child: SizedBox(
                                 height: 50,
-                                margin: EdgeInsets.fromLTRB(2, 0, 2, 2),
-                                decoration: BoxDecoration(
-                                  color: ColorUtils.green,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    e.roomName,
-                                    style: TextStyle(
-                                        fontSize: 20, color: ColorUtils.white),
-                                  ),
+                                child: Column(
+                                  children: [
+                                    Text("${selectedMonth.year}",
+                                        style: TextStyle(fontSize: 18)),
+                                    Text(DateFormat('MMM')
+                                        .format(selectedMonth)),
+                                  ],
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        )
-                      ],
-                    ),
-                  ),
-
-                  /// Calendar Grid
-                  Expanded(
-                    child: SizedBox(
-                      height: (RoomController.to.roomList.length + 1) * 51.5,
-                      width: Get.width,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        controller: scrollController,
-                        child: Stack(
-                          children: [
-                            /// Calendar Day Headers + Grid
-                            Row(
-                              children:
-                                  List.generate(calenderDates.length, (index) {
-                                bool isCurrentDate = DateFormat("dd-MM-yyyy")
-                                        .format(calenderDates[index]) ==
-                                    DateFormat("dd-MM-yyyy")
-                                        .format(DateTime.now());
-
-                                return VisibilityDetector(
-                                  key: ValueKey(calenderDates[index]
-                                      .millisecondsSinceEpoch),
-                                  onVisibilityChanged: (info) {
-                                    if (info.visibleFraction == 1.0 &&
-                                        DateFormat("MM-yyyy")
-                                                .format(selectedMonth) !=
-                                            DateFormat("MM-yyyy")
-                                                .format(calenderDates[index])) {
-                                      setState(() =>
-                                          selectedMonth = calenderDates[index]);
-                                      if (calenderDates[index]
-                                          .isAfter(calenderCenterDate)) {
-                                        setAfterDates();
-                                      } else {
-                                        setBeforeDates();
-                                      }
-                                    }
-                                  },
-                                  child: Column(
-                                    children: [
-                                      SizedBox(
-                                        height: 51.5,
-                                        width: 50,
-                                        child: Column(
-                                          children: [
-                                            Text("${calenderDates[index].day}"),
-                                            Text(DateFormat("EEE")
-                                                .format(calenderDates[index])
-                                                .substring(0, 2)),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 50,
-                                        child: Stack(
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Column(
-                                              children: RoomController
-                                                  .to.roomList
-                                                  .map((e) {
-                                                return InkWell(
-                                                  onTap: () async {
-                                                    await addEditReservationBottomSheet();
-                                                  },
-                                                  child: Container(
-                                                    height: 51.5,
-                                                    width: 50,
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                        color: ColorUtils.grey
-                                                            .withValues(
-                                                                alpha: 0.3),
-                                                        width: 0.4,
-                                                      ),
+                            ),
+                            BlocBuilder<RoomBloc, RoomState>(
+                              builder: (context, state) {
+                                if (state is RoomLoading) {
+                                  return Center(
+                                      child: CircularProgressIndicator());
+                                } else if (state is RoomLoaded) {
+                                  return Column(
+                                    children: state.rooms.map((e) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (context) => Container(
+                                              padding: EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: ColorUtils.white,
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                  top: Radius.circular(16),
+                                                ),
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(StringUtils.rooms),
+                                                  ListTile(
+                                                    title: Text(
+                                                      e.roomName,
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    subtitle: Text(e.roomDesc),
+                                                    trailing: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        IconButton(
+                                                          icon: Icon(Icons.edit,
+                                                              color: ColorUtils
+                                                                  .blue),
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                            addEditRoomBottomSheet(
+                                                                context,
+                                                                room: e);
+                                                          },
+                                                        ),
+                                                        IconButton(
+                                                          icon: Icon(
+                                                              Icons.delete,
+                                                              color: ColorUtils
+                                                                  .red),
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                            context
+                                                                .read<
+                                                                    RoomBloc>()
+                                                                .add(DeleteRoom(
+                                                                    e.id!));
+                                                          },
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                );
-                                              }).toList(),
+                                                ],
+                                              ),
                                             ),
-                                            if (isCurrentDate)
-                                              Center(
-                                                child: SizedBox(
-                                                  height: RoomController
-                                                          .to.roomList.length *
-                                                      51.5,
+                                          );
+                                        },
+                                        child: Container(
+                                          height: 50,
+                                          margin:
+                                              EdgeInsets.fromLTRB(2, 0, 2, 2),
+                                          decoration: BoxDecoration(
+                                            color: ColorUtils.green,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              e.roomName,
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: ColorUtils.white),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                } else if (state is RoomError) {
+                                  return Center(child: Text(state.message));
+                                } else {
+                                  return Center(
+                                      child: Text('No Rooms Available'));
+                                }
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+
+                      // Calendar Grid
+                      BlocBuilder<RoomBloc, RoomState>(
+                        builder: (context, state) {
+                          if (state is RoomLoaded) {
+                            final roomList = state.rooms;
+
+                            return Expanded(
+                              child: SizedBox(
+                                height: (roomList.length + 1) * 51.5,
+                                width: MediaQuery.of(context).size.width,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  controller: scrollController,
+                                  child: Stack(
+                                    children: [
+                                      Row(
+                                        children: List.generate(
+                                            calenderDates.length, (index) {
+                                          bool isCurrentDate =
+                                              DateFormat("dd-MM-yyyy").format(
+                                                      calenderDates[index]) ==
+                                                  DateFormat("dd-MM-yyyy")
+                                                      .format(DateTime.now());
+
+                                          return VisibilityDetector(
+                                            key: ValueKey(calenderDates[index]
+                                                .millisecondsSinceEpoch),
+                                            onVisibilityChanged: (info) {
+                                              if (info.visibleFraction == 1.0 &&
+                                                  DateFormat("MM-yyyy").format(
+                                                          selectedMonth) !=
+                                                      DateFormat("MM-yyyy")
+                                                          .format(calenderDates[
+                                                              index])) {
+                                                setState(() => selectedMonth =
+                                                    calenderDates[index]);
+                                                if (calenderDates[index]
+                                                    .isAfter(
+                                                        calenderCenterDate)) {
+                                                  setAfterDates();
+                                                } else {
+                                                  setBeforeDates();
+                                                }
+                                              }
+                                            },
+                                            child: Column(
+                                              children: [
+                                                SizedBox(
+                                                  height: 51.5,
                                                   width: 50,
-                                                  child: Stack(
+                                                  child: Column(
                                                     children: [
-                                                      Center(
-                                                          child: VerticalDivider(
-                                                              color: ColorUtils
-                                                                  .blue)),
-                                                      Align(
-                                                        alignment:
-                                                            Alignment.topCenter,
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 5,
-                                                                  left: 1),
-                                                          child: CircleAvatar(
-                                                            radius: 6,
-                                                            backgroundColor:
-                                                                ColorUtils.blue,
-                                                          ),
-                                                        ),
+                                                      Text(
+                                                          "${calenderDates[index].day}"),
+                                                      Text(
+                                                        DateFormat("EEE")
+                                                            .format(
+                                                                calenderDates[
+                                                                    index])
+                                                            .substring(0, 2),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
-                                              ),
-                                          ],
-                                        ),
+                                                SizedBox(
+                                                  width: 50,
+                                                  child: Stack(
+                                                    clipBehavior: Clip.none,
+                                                    children: [
+                                                      Column(
+                                                        children:
+                                                            roomList.map((e) {
+                                                          return InkWell(
+                                                            onTap: () async {
+                                                              await addEditReservationBottomSheet(
+                                                                  context);
+                                                            },
+                                                            child: Container(
+                                                              height: 51.5,
+                                                              width: 50,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                  color: ColorUtils
+                                                                      .grey
+                                                                      .withAlpha(
+                                                                          80),
+                                                                  width: 0.4,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        }).toList(),
+                                                      ),
+                                                      if (isCurrentDate)
+                                                        Center(
+                                                          child: SizedBox(
+                                                            height: roomList
+                                                                    .length *
+                                                                51.5,
+                                                            width: 50,
+                                                            child: Stack(
+                                                              children: [
+                                                                Center(
+                                                                    child: VerticalDivider(
+                                                                        color: ColorUtils
+                                                                            .blue)),
+                                                                Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .topCenter,
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 5,
+                                                                        left:
+                                                                            1),
+                                                                    child:
+                                                                        CircleAvatar(
+                                                                      radius: 6,
+                                                                      backgroundColor:
+                                                                          ColorUtils
+                                                                              .blue,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }),
                                       ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ),
 
-                            /// Reservation Bars
-                            for (int i = 0; i < reservationList.length; i++)
-                              Builder(builder: (context) {
-                                final reservation = reservationList[i];
-                                if (reservation.roomId==0) {
-                                  return SizedBox();
-                                }
+                                      // Reservation Bars
+                                      for (int i = 0;
+                                          i < reservationList.length;
+                                          i++)
+                                        Builder(builder: (context) {
+                                          final reservation =
+                                              reservationList[i];
+                                          if (reservation.roomId == 0) {
+                                            return SizedBox();
+                                          }
 
-                                final inDays =
-                                    DateTime.parse(reservation.checkout)
-                                        .difference(
-                                            DateTime.parse(reservation.checkin))
-                                        .inDays;
+                                          final inDays = DateTime.parse(
+                                                  reservation.checkout)
+                                              .difference(DateTime.parse(
+                                                  reservation.checkin))
+                                              .inDays;
 
-                                final containIndex = calenderDates.indexWhere(
-                                    (date) =>
-                                        DateFormat("yyyy-MM-dd").format(date) ==
-                                        reservation.checkin);
+                                          final containIndex =
+                                              calenderDates.indexWhere((date) =>
+                                                  DateFormat("yyyy-MM-dd")
+                                                      .format(date) ==
+                                                  reservation.checkin);
 
-                                if (containIndex == -1) {
-                                  return SizedBox();
-                                }
+                                          if (containIndex == -1) {
+                                            return SizedBox();
+                                          }
 
-                                final roomIdIndex = RoomController.to.roomList
-                                    .indexWhere((room) =>
-                                        room.id == reservation.roomId);
-                                return Positioned(
-                                  top: ((roomIdIndex + 1) * 51.5) + 2.5,
-                                  left: (containIndex * 50),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Get.to(() => ReservationDetailScreen(
-                                          reservation: reservation));
-                                    },
-                                    child: Container(
-                                      height: 45,
-                                      width: ((inDays + 1) * 50),
-                                      decoration: BoxDecoration(
-                                        color: Colors.transparent,
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      child: Center(
-                                        child: Container(
-                                          height: 45,
-                                          width: (inDays * 50),
-                                          decoration: BoxDecoration(
-                                            color: CommonMethod()
-                                                .reservationColor(reservation),
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              reservation.fullname,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: reservation.balance == 0
-                                                    ? ColorUtils.black
-                                                    : ColorUtils.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
+                                          final roomIdIndex =
+                                              roomList.indexWhere((room) =>
+                                                  room.id ==
+                                                  reservation.roomId);
+
+                                          return Positioned(
+                                            top: ((roomIdIndex + 1) * 51.5) +
+                                                2.5,
+                                            left: (containIndex * 50),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ReservationDetailScreen(
+                                                            reservation:
+                                                                reservation),
+                                                  ),
+                                                );
+                                              },
+                                              child: Container(
+                                                height: 45,
+                                                width: ((inDays + 1) * 50),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.transparent,
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                ),
+                                                child: Center(
+                                                  child: Container(
+                                                    height: 45,
+                                                    width: (inDays * 50),
+                                                    decoration: BoxDecoration(
+                                                      color: CommonMethod()
+                                                          .reservationColor(
+                                                              reservation),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              50),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        reservation.fullname,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                          color: reservation
+                                                                      .balance ==
+                                                                  0
+                                                              ? ColorUtils.black
+                                                              : ColorUtils
+                                                                  .white,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                          );
+                                        }),
+                                    ],
                                   ),
-                                );
-                              }),
-                          ],
-                        ),
-                      ),
-                    ),
+                                ),
+                              ),
+                            );
+                          } else if (state is RoomLoading) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (state is RoomError) {
+                            return Center(child: Text(state.message));
+                          } else {
+                            return SizedBox();
+                          }
+                        },
+                      )
+                    ],
                   ),
-                ],
-              ),
-            );
-          }),
+                );
+              } else {
+                return Center(child: Text('No Reservations Found'));
+              }
+            },
+          ),
         ],
       ),
     );
@@ -577,12 +651,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       TextButton(
                           onPressed: () {
-                            Get.back();
+                            Navigator.pop(context);
                           },
                           child: Text("CANCEL")),
                       TextButton(
                           onPressed: () {
-                            Get.back();
+                            Navigator.pop(context);
                             selectedMonth = chosenDateTime;
                             calenderCenterDate = chosenDateTime;
                             calenderDates.clear();
@@ -598,22 +672,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
         });
   }
 
-  void confirmDelete(int id) {
-    Get.defaultDialog(
-      title: StringUtils.deleteRoomTitle,
-      middleText: StringUtils.deleteRoomMessage,
-      textConfirm: StringUtils.delete,
-      textCancel: StringUtils.cancel,
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        // isProcessing.value = true; // ✅ Prevent multiple clicks
-        await Future.delayed(Duration(milliseconds: 300)); // ✅ Delay execution
-        await Get.find<RoomController>().deleteRoom(id);
-        await Get.find<RoomController>()
-            .fetchRooms(); // ✅ Refresh list after delete
-        // isProcessing.value = false;
-        Get.back();
-      },
-    );
-  }
+  // void confirmDelete(BuildContext context, int id) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: Text(StringUtils.deleteRoomTitle),
+  //       content: Text(StringUtils.deleteRoomMessage),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.of(context).pop(), // Cancel
+  //           child: Text(StringUtils.cancel),
+  //         ),
+  //         ElevatedButton(
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Colors.red,
+  //           ),
+  //           onPressed: () async {
+  //             await Future.delayed(
+  //                 Duration(milliseconds: 300)); // Optional delay
+  //             context.read<RoomBloc>().add(DeleteRoom(id));
+  //             context.read<RoomBloc>().add(FetchRooms());
+  //             Navigator.of(context).pop(); // Close the dialog
+  //           },
+  //           child: Text(
+  //             StringUtils.delete,
+  //             style: TextStyle(color: Colors.white),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

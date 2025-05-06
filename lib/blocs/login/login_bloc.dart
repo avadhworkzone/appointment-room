@@ -1,15 +1,12 @@
 import 'package:cal_room/database/db_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'login_event.dart';
 import 'login_state.dart';
-import '../../controller/user_controller.dart';
-import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/login_user_model.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final UserController userController = Get.find<UserController>();
-
   LoginBloc() : super(LoginInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
   }

@@ -7,7 +7,6 @@ import 'package:cal_room/blocs/signup/signup_bloc.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controller/user_controller.dart';
 import 'main_screen.dart';
@@ -157,7 +156,9 @@ class LoginScreen extends StatelessWidget {
                 if (state is LoginSuccess) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(StringUtils.loginSuccess)));
-                  Get.off(() => MainScreen());
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => MainScreen()),
+                  );
                 } else if (state is LoginFailure) {
                   ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(state.message)));
@@ -209,9 +210,16 @@ class LoginScreen extends StatelessWidget {
                                 child: Text(StringUtils.login),
                               ),
                         TextButton(
-                          onPressed: () => Get.off(() => BlocProvider(
-                              create: (_) => SignupBloc(),
-                              child: const SignupScreen())),
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider(
+                                  create: (_) => SignupBloc(),
+                                  child: const SignupScreen(),
+                                ),
+                              ),
+                            );
+                          },
                           child: Text(StringUtils.signupRedirect),
                         )
                       ],

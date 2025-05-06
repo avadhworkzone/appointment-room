@@ -11,7 +11,6 @@ import '../controller/user_controller.dart';
 import '../model/login_user_model.dart';
 // import '../model/user_model.dart';
 import 'login_screen.dart';
-import 'package:get/get.dart';
 
 // class SignupScreen extends StatefulWidget {
 //   const SignupScreen({super.key});

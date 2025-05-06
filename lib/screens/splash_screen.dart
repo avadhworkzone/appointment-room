@@ -2,7 +2,7 @@
 
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main_screen.dart';
 import 'login_screen.dart';
@@ -29,9 +29,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(Duration(seconds: 2)); // ✅ Simulate loading effect
 
     if (isLoggedIn) {
-      Get.off(() => MainScreen()); // ✅ Navigate to Home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
     } else {
-      Get.off(() => LoginScreen()); // ✅ Navigate to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     }
   }
 
@@ -43,7 +49,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/logo.jpg', height: 200), // ✅ Replace with your logo
+            Image.asset('assets/logo.jpg',
+                height: 200), // ✅ Replace with your logo
             SizedBox(height: 20),
             CircularProgressIndicator(), // ✅ Loading animation
           ],

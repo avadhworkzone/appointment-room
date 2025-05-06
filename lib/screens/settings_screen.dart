@@ -1,34 +1,41 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
+import 'package:cal_room/blocs/reservation/reservation__event.dart';
+import 'package:cal_room/blocs/room/room_bloc.dart';
+import 'package:cal_room/blocs/room/room_event.dart';
+import 'package:cal_room/blocs/user/user_bloc.dart';
+import 'package:cal_room/blocs/user/user_event.dart';
 import 'package:cal_room/screens/sales_report_screen.dart';
 import 'package:cal_room/screens/transaction_report.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import '../controller/user_controller.dart';
-import '../controller/room_controller.dart';
 import '../controller/reservation_controller.dart';
 import '../database/db_helper.dart';
 import '../controller/badge_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:get/get.dart';
 
 import 'download_db.dart';
 import 'login_screen.dart';
-class SettingsScreen extends StatelessWidget {
-  final isDarkMode = false.obs;
-  final isLoading = false.obs; // ✅ Prevents multiple database operations at once
 
-  final UserController userController = Get.find();
-  final RoomController roomController = Get.find();
-  final ReservationController reservationController = Get.find();
-  final BadgeController badgeController = Get.find();
+class SettingsScreen extends StatefulWidget {
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool isDarkMode = false;
+
+  bool isLoading = false;
 
   /// Reset Specific Table or Entire Database
-  void resetDatabase({String? table}) async {
-    if (isLoading.value) return; // ✅ Prevent multiple clicks
-    isLoading.value = true; // ✅ Start loading
+  void resetDatabase(BuildContext context, {String? table}) async {
+    if (isLoading) return;
+    isLoading = true;
 
     final db = await DBHelper.database;
     await db.transaction((txn) async {
@@ -37,37 +44,48 @@ class SettingsScreen extends StatelessWidget {
 
         if (table == StringUtils.users) {
           await txn.execute("DELETE FROM Users;");
-          await userController.fetchUsers();
+          context.read<UserBloc>().add(FetchUsers());
         } else if (table == StringUtils.rooms) {
           await txn.execute("DELETE FROM Rooms;");
-          await roomController.fetchRooms();
+          context.read<RoomBloc>().add(FetchRooms());
         } else if (table == StringUtils.reservations) {
           await txn.execute("DELETE FROM Reservations;");
-          await reservationController.fetchReservations();
+          context.read<ReservationBloc>().add(FetchReservationsEvent());
         } else {
           await txn.execute("DELETE FROM Reservations;");
           await txn.execute("DELETE FROM Rooms;");
           await txn.execute("DELETE FROM Users;");
-          await userController.fetchUsers();
-          await roomController.fetchRooms();
-          await reservationController.fetchReservations();
+          context.read<UserBloc>().add(FetchUsers());
+          context.read<RoomBloc>().add(FetchRooms());
+          context.read<ReservationBloc>().add(FetchReservationsEvent());
         }
 
         await txn.execute("PRAGMA foreign_keys = ON;");
       } catch (e) {
-        Get.snackbar(StringUtils.error, "${StringUtils.dbResetFailed}: ${e.toString()}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${StringUtils.dbResetFailed}: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     });
 
     // ✅ Update badge counts **AFTER** database operations are complete
     Future.delayed(Duration(milliseconds: 500), () {
-      if (Get.isRegistered<BadgeController>()) {
-        badgeController.updateBadgeCounts();
-      }
+      // if (Get.isRegistered<BadgeController>()) {
+      //   badgeController.updateBadgeCounts();
+      // }
     });
 
-    isLoading.value = false; // ✅ Stop loading
-    Get.snackbar(StringUtils.success, "${table ?? StringUtils.allData} ${StringUtils.resetSuccess}");
+    isLoading = false; // ✅ Stop loading
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:
+            Text("${table ?? StringUtils.allData} ${StringUtils.resetSuccess}"),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -76,91 +94,116 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(title: Text(StringUtils.settings)),
       body: Column(
         children: [
-          Obx(() => SwitchListTile(
+          SwitchListTile(
             title: Text(StringUtils.darkMode),
-            value: isDarkMode.value,
+            value: isDarkMode,
             onChanged: (value) {
-              isDarkMode.value = value;
-              Get.changeTheme(value ? ThemeData.dark() : ThemeData.light());
+              setState(() {
+                isDarkMode = value;
+                Get.changeTheme(value ? ThemeData.dark() : ThemeData.light());
+              });
             },
-          )),
-          Obx(() {
-            if (isLoading.value) {
-              return Center(child: CircularProgressIndicator()); // ✅ Show loading indicator
-            }
-            return Column(
+          ),
+          if (isLoading) Center(child: CircularProgressIndicator()),
+          if (!isLoading)
+            Column(
               children: [
                 ListTile(
                   leading: Icon(Icons.delete, color: ColorUtils.red),
                   title: Text(StringUtils.resetAll),
-                  onTap: () => showResetOptions(),
+                  onTap: () => showResetOptions(context),
                 ),
                 ListTile(
                   leading: Icon(Icons.people, color: ColorUtils.blue),
                   title: Text(StringUtils.resetUsers),
-                  onTap: () => resetDatabase(table: StringUtils.users),
+                  onTap: () => resetDatabase(context, table: StringUtils.users),
                 ),
                 ListTile(
                   leading: Icon(Icons.meeting_room, color: ColorUtils.green),
                   title: Text(StringUtils.resetRooms),
-                  onTap: () => resetDatabase(table: StringUtils.rooms),
+                  onTap: () => resetDatabase(context, table: StringUtils.rooms),
                 ),
                 ListTile(
                   leading: Icon(Icons.event, color: ColorUtils.purple),
                   title: Text(StringUtils.resetReservations),
-                  onTap: () => resetDatabase(table: StringUtils.reservations),
+                  onTap: () =>
+                      resetDatabase(context, table: StringUtils.reservations),
                 ),
                 ListTile(
-                  leading: Icon(Icons.insert_drive_file_outlined, color: ColorUtils.blue),
+                  leading: Icon(Icons.insert_drive_file_outlined,
+                      color: ColorUtils.blue),
                   title: Text(StringUtils.downloadDB),
-                  onTap: () async{
+                  onTap: () async {
                     await DownloadDBFile.downloadDBFile();
-
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.history, color: ColorUtils.blue),
                   title: Text(StringUtils.salesReport),
-                  onTap: () async{
-                    Get.to(()=>ReportScreen());
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ReportScreen()),
+                    );
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.payment, color: ColorUtils.blue),
                   title: Text(StringUtils.transactionReport),
-                  onTap: () async{
-                    Get.to(()=>TransactionScreen());
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TransactionScreen()),
+                    );
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.logout, color: ColorUtils.red),
                   title: Text(StringUtils.logout),
-                  onTap: () async{
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.clear(); // ✅ Remove login session
-
-                    Get.off(() => LoginScreen()); // ✅ Navigate back to login
+                  onTap: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.clear();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                      (Route<dynamic> route) =>
+                          false, // This will remove all the previous routes
+                    );
                   },
                 ),
               ],
-            );
-          }),
+            ),
         ],
       ),
     );
   }
 
   /// ✅ Show Confirmation Dialog Before Reset
-  void showResetOptions() {
-    Get.defaultDialog(
-      title: StringUtils.resetDatabase,
-      content: const Text(StringUtils.resetConfirmation),
-      textCancel: StringUtils.cancel,
-      textConfirm: StringUtils.confirmReset,
-      confirmTextColor: ColorUtils.white,
-      onConfirm: () {
-        Get.back(); // Close dialog
-        resetDatabase();
+  void showResetOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(StringUtils.resetDatabase),
+          content: const Text(StringUtils.resetConfirmation),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(StringUtils.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                resetDatabase(context);
+              },
+              child: Text(StringUtils.confirmReset),
+            ),
+          ],
+        );
       },
     );
   }

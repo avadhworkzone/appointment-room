@@ -2,7 +2,7 @@
 // import 'package:cal_room/model/reservation_model.dart';
 // import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 // import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
+
 //
 // class ReservationCardView extends StatelessWidget {
 //   const ReservationCardView(
@@ -172,14 +172,17 @@
 //     );
 //   }
 // }
-import 'package:cal_room/controller/reservation_controller.dart';
+// import 'package:cal_room/controller/reservation_controller.dart';
 import 'package:cal_room/model/reservation_model.dart';
 import 'package:cal_room/screens/reservation_detail_screen.dart';
 import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../blocs/reservation/reservation__bloc.dart';
+import '../blocs/reservation/reservation__event.dart';
 
 class ReservationCardView extends StatelessWidget {
   final bool canEditDelete; // ✅ NEW
@@ -199,7 +202,12 @@ class ReservationCardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Get.to(()=>ReservationDetailScreen(reservation: reservation));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ReservationDetailScreen(reservation: reservation),
+          ),
+        );
       },
       child: Card(
         margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -231,14 +239,17 @@ class ReservationCardView extends StatelessWidget {
                             IconButton(
                               icon: Icon(Icons.edit, color: ColorUtils.blue),
                               onPressed: () => addEditReservationBottomSheet(
+                                  context,
                                   reservation: reservation),
                             ),
                             IconButton(
                               icon: Icon(Icons.delete, color: ColorUtils.red),
                               onPressed: () async {
-                                await _deleteReservation(reservation.id!);
-                                await ReservationController.to
-                                    .fetchReservations();
+                                await _deleteReservation(
+                                    context, reservation.id!);
+                                context
+                                    .read<ReservationBloc>()
+                                    .add(FetchReservationsEvent());
                               },
                             ),
                           ],
@@ -281,9 +292,10 @@ class ReservationCardView extends StatelessWidget {
                 children: [
                   _buildGuestCount(
                       Icons.person, StringUtils.adults, reservation.adult),
+                  _buildGuestCount(Icons.child_care, StringUtils.children,
+                      reservation.child),
                   _buildGuestCount(
-                      Icons.child_care, StringUtils.children, reservation.child),
-                  _buildGuestCount(Icons.pets, StringUtils.pets, reservation.pet),
+                      Icons.pets, StringUtils.pets, reservation.pet),
                 ],
               ),
 
@@ -296,13 +308,17 @@ class ReservationCardView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildPriceRow(StringUtils.room, 0,
-                          strValue:
-                              reservation.rooms.map((e) => e.roomName).toList().join(',')),
+                          strValue: reservation.rooms
+                              .map((e) => e.roomName)
+                              .toList()
+                              .join(',')),
                       _buildPriceRow(
                           StringUtils.rateNight, reservation.ratePerNight),
-                      _buildPriceRow(StringUtils.subtotal, reservation.subtotal),
+                      _buildPriceRow(
+                          StringUtils.subtotal, reservation.subtotal),
                       _buildPriceRow(StringUtils.tax, reservation.tax),
-                      _buildPriceRow(StringUtils.discount, reservation.discount),
+                      _buildPriceRow(
+                          StringUtils.discount, reservation.discount),
                       _buildPriceRow(
                           StringUtils.grandTotal, reservation.grandTotal,
                           isBold: true),
@@ -378,18 +394,54 @@ class ReservationCardView extends StatelessWidget {
     );
   }
 
-  Future<void> _deleteReservation(int reservationId) async {
-    Get.defaultDialog(
-      title: StringUtils.deleteReservationTitle,
-      middleText: StringUtils.deleteReservationMessage,
-      textConfirm: StringUtils.yes,
-      textCancel: StringUtils.no,
-      confirmTextColor: ColorUtils.white,
-      onConfirm: () async {
-        await ReservationController.to.deleteReservation(reservationId);
-        Get.back();
-        await ReservationController.to.fetchReservations();
-      },
+  Future<void> _deleteReservation(
+      BuildContext context, int reservationId) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(StringUtils.deleteReservationTitle),
+        content: Text(StringUtils.deleteReservationMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Dismiss dialog
+            child: Text(StringUtils.no),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Dismiss dialog first
+              context
+                  .read<ReservationBloc>()
+                  .add(DeleteReservationEvent(reservationId));
+              context.read<ReservationBloc>().add(FetchReservationsEvent());
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(
+              StringUtils.yes,
+              style: TextStyle(color: ColorUtils.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+// Future<void> _deleteReservation(
+  //     BuildContext context, int reservationId) async {
+  //   Get.defaultDialog(
+  //     title: StringUtils.deleteReservationTitle,
+  //     middleText: StringUtils.deleteReservationMessage,
+  //     textConfirm: StringUtils.yes,
+  //     textCancel: StringUtils.no,
+  //     confirmTextColor: ColorUtils.white,
+  //     onConfirm: () async {
+  //       context
+  //           .read<ReservationBloc>()
+  //           .add(DeleteReservationEvent(reservationId));
+  //       Navigator.pop(context);
+  //       context.read<ReservationBloc>().add(FetchReservationsEvent());
+  //     },
+  //   );
+  // }
 }

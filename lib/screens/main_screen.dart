@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 
 import '../controller/badge_controller.dart';
 import 'calendar_screen.dart';
-import 'package:get/get.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -31,28 +30,28 @@ class _MainScreenState extends State<MainScreen> {
     SettingsScreen(),
   ];
 
-  final BadgeController badgeController = Get.find<BadgeController>();
+  // final BadgeController badgeController = Get.find<BadgeController>();
 
   /// Clear badge count for the selected screen when tapped
-  void clearBadge(int index) {
-    switch (index) {
-      case 0:
-        badgeController.calendarBadge.value = 0;
-        break;
-      case 1:
-        badgeController.roomsBadge.value = 0;
-        break;
-      case 2:
-        badgeController.reservationsBadge.value = 0;
-        break;
-      case 3:
-        badgeController.usersBadge.value = 0;
-        break;
-      case 4:
-        badgeController.settingsBadge.value = 0;
-        break;
-    }
-  }
+  // void clearBadge(int index) {
+  //   switch (index) {
+  //     case 0:
+  //       badgeController.calendarBadge.value = 0;
+  //       break;
+  //     case 1:
+  //       badgeController.roomsBadge.value = 0;
+  //       break;
+  //     case 2:
+  //       badgeController.reservationsBadge.value = 0;
+  //       break;
+  //     case 3:
+  //       badgeController.usersBadge.value = 0;
+  //       break;
+  //     case 4:
+  //       badgeController.settingsBadge.value = 0;
+  //       break;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -70,42 +69,60 @@ class _MainScreenState extends State<MainScreen> {
           IconButton(
             icon: Icon(Icons.search, color: ColorUtils.white),
             onPressed: () {
-              Get.to(()=>SearchReservation());
-            //  showSearch(context: context, delegate: DataSearch());
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SearchReservation(),
+                ),
+              );
+              //  showSearch(context: context, delegate: DataSearch());
             },
           ),
         ],
       ),
       body: screens[currentIndex],
 
-      bottomNavigationBar: Obx(() => NavigationBar(
-            selectedIndex: currentIndex,
-            onDestinationSelected: (index) {
-              setState(() {
-                currentIndex = index;
-                clearBadge(index); // Clear badge on tap
-              });
-            },
-            destinations: [
-              _buildNavItem(Icons.calendar_today, StringUtils.calendar,
-                  badgeController.calendarBadge.value),
-              // _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
-              _buildNavItem(Icons.meeting_room, StringUtils.today,
-                  badgeController.roomsBadge.value),
-              _buildNavItem(Icons.event, StringUtils.reservations,
-                  badgeController.reservationsBadge.value),
-              _buildNavItem(Icons.person, StringUtils.users,
-                  badgeController.usersBadge.value),
-              _buildNavItem(Icons.settings, StringUtils.settings,
-                  badgeController.settingsBadge.value),
-            ],
-          )),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            currentIndex = index;
+            // clearBadge(index); // Clear badge on tap
+          });
+        },
+        destinations: [
+          _buildNavItem(
+            Icons.calendar_today, StringUtils.calendar,
+            // badgeController.calendarBadge.value,
+          ),
+          // _buildNavItem(Icons.meeting_room, "Rooms", badgeController.roomsBadge.value),
+          _buildNavItem(
+            Icons.meeting_room, StringUtils.today,
+            // badgeController.roomsBadge.value,
+          ),
+          _buildNavItem(
+            Icons.event, StringUtils.reservations,
+            // badgeController.reservationsBadge.value,
+          ),
+          _buildNavItem(
+            Icons.person, StringUtils.users,
+            // badgeController.usersBadge.value,
+          ),
+          _buildNavItem(
+            Icons.settings, StringUtils.settings,
+            // badgeController.settingsBadge.value,
+          ),
+        ],
+      ),
     );
   }
 
   /// 🔹 Modern **Navigation Bar Item with Notification Badges**
   NavigationDestination _buildNavItem(
-      IconData icon, String label, int badgeCount) {
+    IconData icon,
+    String label,
+    /* int badgeCount*/
+  ) {
     return NavigationDestination(
       icon: Stack(
         clipBehavior: Clip.none,
