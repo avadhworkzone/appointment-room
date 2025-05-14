@@ -6,6 +6,8 @@
 // import 'package:cal_room/utils/string_utils.dart';
 // import 'package:flutter/material.dart';
 
+// ignore_for_file: use_build_context_synchronously
+
 // import '../controller/user_controller.dart';
 // import '../model/user_model.dart';
 // import 'export_pdf.dart';

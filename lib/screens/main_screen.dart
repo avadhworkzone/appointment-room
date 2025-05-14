@@ -9,7 +9,6 @@ import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 
-import '../controller/badge_controller.dart';
 import 'calendar_screen.dart';
 
 class MainScreen extends StatefulWidget {

@@ -1,14 +1,14 @@
 // // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 //
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:cal_room/blocs/signup/signup_bloc.dart';
 import 'package:cal_room/blocs/signup/signup_event.dart';
 import 'package:cal_room/blocs/signup/signup_state.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../controller/user_controller.dart';
 // import '../database/db_helper.dart';
-import '../model/login_user_model.dart';
 // import '../model/user_model.dart';
 import 'login_screen.dart';
 
@@ -118,7 +118,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  final fullnameController = TextEditingController();
+  final fullNameController = TextEditingController();
 
   void _submitSignup(BuildContext context) {
     if (_formKey.currentState!.validate()) {
@@ -126,7 +126,7 @@ class _SignupScreenState extends State<SignupScreen> {
       bloc.add(SignupSubmitted(
         username: usernameController.text,
         password: passwordController.text,
-        fullname: fullnameController.text,
+        fullname: fullNameController.text,
       ));
     }
   }
@@ -181,7 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
-                      controller: fullnameController,
+                      controller: fullNameController,
                       decoration: _inputDecoration(StringUtils.fullName),
                       validator: (value) =>
                           value!.isEmpty ? StringUtils.enterFullName : null,

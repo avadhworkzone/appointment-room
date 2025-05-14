@@ -117,6 +117,8 @@
 //     },
 //   );
 // }
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:cal_room/blocs/room/room_bloc.dart';

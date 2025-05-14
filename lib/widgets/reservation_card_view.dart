@@ -3,6 +3,8 @@
 // import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 // import 'package:flutter/material.dart';
 
+// ignore_for_file: use_build_context_synchronously
+
 //
 // class ReservationCardView extends StatelessWidget {
 //   const ReservationCardView(

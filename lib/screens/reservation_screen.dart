@@ -179,6 +179,8 @@
 //     );
 //   }
 // }
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
 import 'package:cal_room/blocs/reservation/reservation__event.dart';
 import 'package:cal_room/blocs/reservation/reservation__state.dart';

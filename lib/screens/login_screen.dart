@@ -7,8 +7,6 @@ import 'package:cal_room/blocs/signup/signup_bloc.dart';
 import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../controller/user_controller.dart';
 import 'main_screen.dart';
 import 'signup_screen.dart';
 

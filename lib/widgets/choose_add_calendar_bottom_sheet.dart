@@ -1,4 +1,3 @@
-import 'package:cal_room/utils/color_utils.dart';
 import 'package:cal_room/utils/string_utils.dart' show StringUtils;
 import 'package:cal_room/widgets/add_edit_reservation_bottom_sheet.dart';
 import 'package:cal_room/widgets/add_edit_room_bottom_sheet.dart';

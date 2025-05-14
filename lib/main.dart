@@ -1,7 +1,6 @@
 // import 'package:cal_room/screens/login_screen.dart';
 import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
 import 'package:cal_room/blocs/room/room_bloc.dart';
-import 'package:cal_room/blocs/room/room_event.dart';
 import 'package:cal_room/blocs/user/user_bloc.dart';
 import 'package:cal_room/blocs/user/user_event.dart';
 import 'package:cal_room/screens/splash_screen.dart';
@@ -11,15 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 // import 'package:sqflite/sqflite.dart';
-import 'controller/badge_controller.dart';
 // import 'screens/user_screen.dart';
 // import 'screens/room_screen.dart';
 // import 'screens/reservation_screen.dart';
 // import 'screens/calendar_screen.dart';
 // import 'screens/settings_screen.dart';
-import 'controller/user_controller.dart';
-import 'controller/room_controller.dart';
-import 'controller/reservation_controller.dart';
 // import 'database/db_helper.dart';
 
 void main() async {

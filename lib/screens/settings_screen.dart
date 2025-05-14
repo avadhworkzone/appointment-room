@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors
+// ignore_for_file: use_key_in_widget_constructors, use_build_context_synchronously
 
 import 'package:cal_room/blocs/reservation/reservation__bloc.dart';
 import 'package:cal_room/blocs/reservation/reservation__event.dart';
@@ -13,10 +13,7 @@ import 'package:cal_room/utils/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import '../controller/user_controller.dart';
-import '../controller/reservation_controller.dart';
 import '../database/db_helper.dart';
-import '../controller/badge_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'download_db.dart';
